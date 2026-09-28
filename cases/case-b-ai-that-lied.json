@@ -1,0 +1,417 @@
+{
+  "code": "CASE-B",
+  "title": "The AI That Lied",
+  "briefing_md": "Kiranaa Mart is a fictional grocery chain with 120 stores in four regions.\n\nEvery Monday at 6:00 AM an AI assistant, InsightBot, writes the weekly sales report for management. This Monday (20 October) it reported that North region revenue had crashed by 61% and recommended a closure review for nine North stores. The CEO forwarded it to the board at 9:10 AM.\n\nThe North store managers say their weekend was normal. The analytics team says the new AI model is hallucinating.\n\nFind out where the wrong numbers really came from: the model, the prompt, the data, the API or a person.",
+  "root_cause_options": [
+    "Compromised credentials / external attacker",
+    "Deliberate insider action",
+    "Human error during an approved change",
+    "Buggy code release",
+    "Bad or wrongly formatted input data",
+    "AI model or prompt error",
+    "Prompt injection",
+    "Hardware failure",
+    "Test or staging activity hitting production",
+    "Third-party service outage"
+  ],
+  "twist_md": "The IT team has dug out an email from the POS (billing software) vendor that was sitting unread in a shared mailbox.",
+  "evidence": [
+    {
+      "code": "E01",
+      "type": "ai_output",
+      "title": "InsightBot weekly report (Mon 20 Oct)",
+      "time_label": "Mon 06:00:12",
+      "content": {
+        "model": "InsightBot · insight-llm-v3",
+        "prompt": "Write the weekly performance report for leadership using the attached regional sales table.",
+        "output": "WEEKLY PERFORMANCE — 13–19 Oct\n\nNorth: ₹0.38 Cr (−61% week on week). Nine stores (N-02, N-04, N-05, N-07, N-08, N-11, N-12, N-14, N-15) show revenue below ₹5,000 for the week.\nSouth: ₹3.12 Cr (+2%). East: ₹2.41 Cr (+1%). West: ₹2.87 Cr (−1%).\n\nRecommendation: start a closure review for the nine underperforming North stores immediately."
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 5
+      }
+    },
+    {
+      "code": "E02",
+      "type": "log",
+      "title": "model-registry.log",
+      "time_label": "Fri 17 Oct 15:40",
+      "content": {
+        "lines": [
+          "15:40:02 INFO  registry  InsightBot model changed: insight-llm-v2 -> insight-llm-v3",
+          "15:40:02 INFO  registry  change by: ml-platform (release RL-208)",
+          "15:41:10 INFO  registry  smoke test passed (12/12)"
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E03",
+      "type": "db",
+      "title": "Prompt edit history",
+      "content": {
+        "table": "prompt_versions",
+        "columns": [
+          "version",
+          "edited_at",
+          "edited_by",
+          "change"
+        ],
+        "rows": [
+          [
+            "v14",
+            "Fri 17 Oct 16:02",
+            "rohit.s",
+            "Added: 'Be decisive. Always end with one clear recommendation.'"
+          ],
+          [
+            "v13",
+            "Mon 29 Sep 11:15",
+            "rohit.s",
+            "Added regional breakdown section"
+          ],
+          [
+            "—",
+            "Sun 19 Oct 22:14",
+            "rohit.s",
+            "(viewed, no change)"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E04",
+      "type": "chat",
+      "title": "#analytics",
+      "time_label": "Mon 09:30",
+      "content": {
+        "channel": "#analytics",
+        "messages": [
+          {
+            "from": "Priya",
+            "at": "09:30",
+            "text": "The CEO is asking about the North numbers. The new model is hallucinating, right? It only went live on Friday."
+          },
+          {
+            "from": "Rohit",
+            "at": "09:34",
+            "text": "Could also be my 'be decisive' prompt change making it exaggerate. Rolling back to v2 + prompt v13 now."
+          },
+          {
+            "from": "Priya",
+            "at": "09:51",
+            "text": "Rolled back and re-ran. Same North numbers. Weird."
+          }
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E05",
+      "type": "db",
+      "title": "warehouse.sales_weekly (excerpt)",
+      "content": {
+        "table": "sales_weekly (week 13–19 Oct)",
+        "columns": [
+          "store",
+          "region",
+          "revenue_inr",
+          "bills",
+          "avg_bill_inr"
+        ],
+        "rows": [
+          [
+            "N-04",
+            "North",
+            "642.13",
+            "5,618",
+            "0.11"
+          ],
+          [
+            "N-07",
+            "North",
+            "609.40",
+            "5,420",
+            "0.11"
+          ],
+          [
+            "N-03",
+            "North",
+            "648,250.00",
+            "5,702",
+            "113.69"
+          ],
+          [
+            "S-11",
+            "South",
+            "601,930.50",
+            "5,311",
+            "113.34"
+          ],
+          [
+            "E-02",
+            "East",
+            "577,112.00",
+            "5,080",
+            "113.61"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E06",
+      "type": "code",
+      "title": "etl/parse_pos.py",
+      "content": {
+        "filename": "etl/parse_pos.py",
+        "language": "python",
+        "source": "def parse_amount(raw: str) -> float:\n    # POS exports amounts like \"1,234.50\" -> strip thousands separators\n    return float(raw.replace(\",\", \"\"))\n\ndef parse_row(row):\n    return {\n        \"store\": row[\"store_id\"],\n        \"amount\": parse_amount(row[\"amount\"]),\n        \"bills\": int(row[\"bills\"]),\n    }\n"
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E07",
+      "type": "log",
+      "title": "etl-nightly.log",
+      "time_label": "Mon 02:00",
+      "content": {
+        "lines": [
+          "02:00:01 INFO  etl  nightly load started (120 store files)",
+          "02:03:44 INFO  etl  parsed 120 files, 0 parse errors",
+          "02:03:45 WARN  quality  9 stores: revenue mean dropped 99.9% vs last week (N-02, N-04, N-05, N-07, N-08, N-11, N-12, N-14, N-15)",
+          "02:03:45 INFO  quality  alert channel #data-quality is MUTED until 31 Oct (set by priya.k: 'too noisy during festive sale')",
+          "02:04:10 INFO  etl  load complete -> warehouse.sales_weekly"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 3
+      }
+    },
+    {
+      "code": "E08",
+      "type": "note",
+      "title": "POS export — store N-04 (raw CSV, first lines)",
+      "time_label": "Mon 01:00",
+      "content": {
+        "body_md": "store_id,date,bills,amount\nN-04,2026-10-19,812,\"91.732,50\"\nN-04,2026-10-18,845,\"95.905,00\"\nN-04,2026-10-17,779,\"88.330,75\""
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 2
+      }
+    },
+    {
+      "code": "E09",
+      "type": "api",
+      "title": "POST insightbot /v1/generate (request)",
+      "time_label": "Mon 06:00:00",
+      "content": {
+        "method": "POST",
+        "url": "https://insightbot.internal/v1/generate",
+        "status": 200,
+        "body": {
+          "template": "weekly_report_v14",
+          "attachments": {
+            "regional_totals_inr": {
+              "North": 3800412.4,
+              "South": 31204118.0,
+              "East": 24110230.5,
+              "West": 28733901.0
+            },
+            "north_last_week_inr": 9743020.0
+          },
+          "note": "North total includes nine stores with weekly revenue under ₹1,000 each"
+        }
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 4
+      }
+    },
+    {
+      "code": "E10",
+      "type": "email",
+      "title": "CEO forwards the report to the board",
+      "time_label": "Mon 09:10",
+      "content": {
+        "from": "ceo@kiranaamart.example",
+        "to": "board@kiranaamart.example",
+        "subject": "FW: Weekly performance — North needs urgent action",
+        "sent_at": "Mon 20 Oct 2026, 09:10",
+        "body_md": "Please see below. North has collapsed. I'd like a closure plan for the nine stores by Thursday."
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 6
+      }
+    },
+    {
+      "code": "E11",
+      "type": "note",
+      "title": "Model evaluation dashboard",
+      "content": {
+        "body_md": "Number-faithfulness test (does the report repeat the input figures exactly?)\n\ninsight-llm-v2: 91.0% (last run 10 Oct)\ninsight-llm-v3: 94.2% (last run 16 Oct)\n\nBoth models copy the totals they are given; neither calculates totals itself."
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E12",
+      "type": "chat",
+      "title": "#store-ops-north",
+      "time_label": "Mon 08:05",
+      "content": {
+        "channel": "#store-ops-north",
+        "messages": [
+          {
+            "from": "Harpreet (N-04 manager)",
+            "at": "08:05",
+            "text": "Weekend was good, festive footfall up 8%. Why is head office asking if we're closing?"
+          },
+          {
+            "from": "Sunil (N-07 manager)",
+            "at": "08:11",
+            "text": "Same here. By the way the billing machines updated themselves on Sunday night, the screen shows amounts differently now."
+          }
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E13",
+      "type": "api",
+      "title": "GET weather-alerts /north",
+      "time_label": "Sat–Sun",
+      "content": {
+        "method": "GET",
+        "url": "https://weather.example/v1/alerts?region=north",
+        "status": 200,
+        "body": {
+          "alerts": [
+            {
+              "type": "heavy_rain",
+              "from": "2026-10-18T06:00",
+              "to": "2026-10-19T20:00",
+              "severity": "yellow"
+            }
+          ]
+        }
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E14",
+      "type": "email",
+      "title": "IT newsletter",
+      "content": {
+        "from": "it-helpdesk@kiranaamart.example",
+        "to": "all-staff@kiranaamart.example",
+        "subject": "New coffee machines + password reminder",
+        "sent_at": "Fri 17 Oct 2026, 10:00",
+        "body_md": "New coffee machines are on floors 2 and 4. Reminder: passwords expire every 90 days."
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E15",
+      "type": "log",
+      "title": "hr-payroll.log",
+      "time_label": "Mon 01:30",
+      "content": {
+        "lines": [
+          "01:30:00 INFO  payroll  monthly export started (2,340 employees)",
+          "01:34:12 INFO  payroll  export complete -> bank-upload/2026-10.csv",
+          "01:34:13 INFO  payroll  checksum ok"
+        ]
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E16",
+      "type": "note",
+      "title": "News clipping (local paper, Sat 18 Oct)",
+      "time_label": "Sat 18 Oct",
+      "content": {
+        "body_md": "\"FreshBasket opens its biggest North-region supermarket this weekend, with 20% opening discounts across groceries.\" — The Northern Times"
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E17",
+      "type": "email",
+      "title": "Facilities: AC repair at N-09",
+      "time_label": "Thu 16 Oct",
+      "content": {
+        "from": "facilities@kiranaamart.example",
+        "to": "store-ops-north@kiranaamart.example",
+        "subject": "AC repair completed at N-09",
+        "sent_at": "Thu 16 Oct 2026, 15:20",
+        "body_md": "The air-conditioning compressor at store N-09 was replaced today. No further action needed."
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "T01",
+      "type": "email",
+      "title": "BillEase POS release 5.2 notice",
+      "time_label": "Sun 19 Oct 23:00",
+      "is_twist": true,
+      "content": {
+        "from": "releases@billease-pos.example",
+        "to": "it-shared@kiranaamart.example",
+        "subject": "BillEase 5.2 rolling out tonight to pilot stores",
+        "sent_at": "Fri 17 Oct 2026, 18:30",
+        "body_md": "BillEase 5.2 will auto-install on Sunday 19 Oct at 23:00 for your pilot group (North region, 9 stores).\n\nWhat's new: regional number formatting. CSV exports now use the store locale by default, e.g. 1.234,56 (dot for thousands, comma for decimals). To keep the old format, set export.locale=en-IN before the update."
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 1
+      }
+    }
+  ],
+  "answer": {
+    "root_cause_category": "AI model or prompt error",
+    "root_cause_md": "Before the twist, the Friday model upgrade (E02), the 'be decisive' prompt change (E03) and the analytics chat (E04) point at the AI. Careful teams see that rolling back changed nothing (E04), that the model only repeats the totals it is given (E09, E11), and that the raw CSV uses a comma as the decimal separator (E08) which the parser strips (E06).",
+    "responsible": "InsightBot model upgrade (insight-llm-v3) / prompt v14",
+    "post_twist_category": "Bad or wrongly formatted input data",
+    "post_twist_responsible": "BillEase POS 5.2 switched the nine North pilot stores' CSV exports to the 1.234,56 number format; etl/parse_pos.py strips commas, so every amount became about 1/1000th of its real value; the data-quality alert fired but its channel was muted. The AI reported its input faithfully."
+  }
+}

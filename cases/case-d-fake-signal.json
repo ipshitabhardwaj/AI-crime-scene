@@ -1,0 +1,408 @@
+{
+  "code": "CASE-D",
+  "title": "The Fake Signal",
+  "briefing_md": "Campus Nexus is the smart-building system of a fictional university. It watches 2,400 sensors across the hostels.\n\nAt 3:12 AM on Thursday 16 October, it raised a FIRE alarm for Hostel Block C, third floor. The automatic sirens woke 600 students, who stood outside in the cold for 40 minutes. The fire team found no smoke, no heat and no fire.\n\nThe wardens say sensor C3-SMK-114 has been faulty for weeks and want it replaced. The dean wants to know if that is really what happened, and whether it could happen again tomorrow night.",
+  "root_cause_options": [
+    "Compromised credentials / external attacker",
+    "Deliberate insider action",
+    "Human error during an approved change",
+    "Buggy code release",
+    "Bad or wrongly formatted input data",
+    "AI model or prompt error",
+    "Prompt injection",
+    "Hardware failure",
+    "Test or staging activity hitting production",
+    "Third-party service outage"
+  ],
+  "twist_md": "The QA team has shared the log of their overnight CI pipeline and a message from their channel the next morning.",
+  "evidence": [
+    {
+      "code": "E01",
+      "type": "log",
+      "title": "bms-alerts.log",
+      "time_label": "03:12",
+      "content": {
+        "lines": [
+          "03:12:04 ALERT FIRE  sensor=C3-SMK-114 smoke_ppm=812 (threshold 300) zone=HOSTEL-C/F3",
+          "03:12:04 INFO  rule  single-sensor fire rule matched (confirmation from 2nd sensor: DISABLED)",
+          "03:12:05 INFO  bms   escalation -> siren-controller zone C"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 4
+      }
+    },
+    {
+      "code": "E02",
+      "type": "db",
+      "title": "Maintenance tickets for C3-SMK-114",
+      "content": {
+        "table": "maintenance_tickets",
+        "columns": [
+          "ticket",
+          "opened",
+          "sensor",
+          "issue",
+          "status"
+        ],
+        "rows": [
+          [
+            "MT-2231",
+            "2026-10-02",
+            "C3-SMK-114",
+            "Battery low warning",
+            "CLOSED (battery replaced 03 Oct)"
+          ],
+          [
+            "MT-2290",
+            "2026-10-09",
+            "C3-SMK-114",
+            "Student reports sensor chirping at night",
+            "OPEN"
+          ],
+          [
+            "MT-2291",
+            "2026-10-09",
+            "C3-SMK-117",
+            "Cover cracked",
+            "OPEN"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E03",
+      "type": "api",
+      "title": "MQTT message that triggered the alarm (captured)",
+      "time_label": "03:12:03",
+      "content": {
+        "method": "MQTT PUBLISH",
+        "url": "mqtt://bms-prod.campus.local:1883  topic=campus/hostel-c/f3/smoke",
+        "body": {
+          "sensor": "C3-SMK-114",
+          "smoke_ppm": 812,
+          "battery": 3.1,
+          "ts": "2026-08-14T03:12:03+05:30",
+          "seq": 55120
+        }
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 3
+      }
+    },
+    {
+      "code": "E04",
+      "type": "db",
+      "title": "C3-SMK-114 readings (16 Oct, around the alarm)",
+      "content": {
+        "table": "sensor_readings",
+        "columns": [
+          "received_at",
+          "seq",
+          "smoke_ppm",
+          "battery_v",
+          "source_client"
+        ],
+        "rows": [
+          [
+            "03:11:00",
+            "91876",
+            "4",
+            "3.6",
+            "gw-hostel-c"
+          ],
+          [
+            "03:11:30",
+            "91877",
+            "3",
+            "3.6",
+            "gw-hostel-c"
+          ],
+          [
+            "03:12:00",
+            "91878",
+            "4",
+            "3.6",
+            "gw-hostel-c"
+          ],
+          [
+            "03:12:03",
+            "55120",
+            "812",
+            "3.1",
+            "nx-sim-02"
+          ],
+          [
+            "03:12:30",
+            "91879",
+            "3",
+            "3.6",
+            "gw-hostel-c"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E05",
+      "type": "log",
+      "title": "mqtt-broker.log (bms-prod)",
+      "time_label": "03:11:59",
+      "content": {
+        "lines": [
+          "03:11:59 INFO  New client connected from 10.20.4.77 as nx-sim-02 (anonymous, clean session)",
+          "03:12:00 INFO  nx-sim-02 published 1,204 messages to campus/# in 9.8s",
+          "03:12:10 INFO  Client nx-sim-02 disconnected",
+          "03:12:10 WARN  allow_anonymous=true on listener 1883 (production)"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 2
+      }
+    },
+    {
+      "code": "E06",
+      "type": "chat",
+      "title": "#hostel-wardens",
+      "time_label": "03:20",
+      "content": {
+        "channel": "#hostel-wardens",
+        "messages": [
+          {
+            "from": "Warden Block C",
+            "at": "03:20",
+            "text": "False alarm again?! Sensor 114 was chirping all last week, I raised a ticket."
+          },
+          {
+            "from": "Chief Warden",
+            "at": "03:26",
+            "text": "Get that sensor replaced today. Students are furious."
+          }
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E07",
+      "type": "ai_output",
+      "title": "BMS Assistant diagnosis",
+      "time_label": "03:30",
+      "content": {
+        "model": "BMS Assistant",
+        "prompt": "Why did the fire alarm trigger in Hostel C at 03:12?",
+        "output": "Most probable cause: hardware malfunction of smoke sensor C3-SMK-114.\nSupporting signals: open maintenance ticket MT-2290 (chirping), battery replaced 13 days ago, reading of 812 ppm without any neighbouring sensor rising.\nRecommended action: replace C3-SMK-114 and close the incident."
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E08",
+      "type": "log",
+      "title": "siren-controller.log",
+      "time_label": "03:12:06",
+      "content": {
+        "lines": [
+          "03:12:06 INFO  siren  EVACUATE zone=C floors=ALL (source: bms rule fire-single)",
+          "03:52:40 INFO  siren  reset by fire-team (manual key)"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 5
+      }
+    },
+    {
+      "code": "E09",
+      "type": "note",
+      "title": "Fire team report",
+      "time_label": "03:25",
+      "content": {
+        "body_md": "Arrived 03:19. Block C floors 1–4 inspected with thermal camera. No smoke, no heat source, no burning smell. Sensor C3-SMK-114 tested on site with test spray: responds normally, reading 4 ppm in clean air. All clear at 03:48."
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 6
+      }
+    },
+    {
+      "code": "E10",
+      "type": "email",
+      "title": "Fire drill report — 14 August",
+      "time_label": "14 Aug",
+      "content": {
+        "from": "safety@campus.example",
+        "to": "facilities@campus.example; qa-team@campus.example",
+        "subject": "Night fire drill, Block C — report and recording",
+        "sent_at": "14 Aug 2026, 09:10",
+        "body_md": "The night drill in Block C started at 03:12 using a smoke generator near C3-SMK-114. All sensor traffic from 03:00–03:30 was recorded (drill-2026-08-14.jsonl) and shared with QA for future load testing."
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E11",
+      "type": "code",
+      "title": "replay-tool/config.yaml",
+      "content": {
+        "filename": "replay-tool/config.yaml",
+        "language": "yaml",
+        "source": "# Replays recorded sensor traffic for load testing.\nbroker: ${BROKER_URL:-mqtt://bms-prod.campus.local:1883}   # default kept from the first prototype\ndataset: datasets/drill-2026-08-14.jsonl\nspeed: 100x\nclient_id: nx-sim-02\n"
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E12",
+      "type": "db",
+      "title": "DHCP leases (campus network)",
+      "content": {
+        "table": "dhcp_leases",
+        "columns": [
+          "ip",
+          "hostname",
+          "owner",
+          "lease_start"
+        ],
+        "rows": [
+          [
+            "10.20.4.77",
+            "ci-runner-02",
+            "QA team (CI runner)",
+            "2026-10-15 18:02"
+          ],
+          [
+            "10.20.4.80",
+            "lib-kiosk-03",
+            "Library",
+            "2026-10-12 08:00"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E13",
+      "type": "log",
+      "title": "power-grid.log",
+      "time_label": "03:05",
+      "content": {
+        "lines": [
+          "03:05:12 WARN  grid  voltage dip 11% on feeder A (Hostel Block A) for 180 ms",
+          "03:05:13 INFO  grid  UPS took over, no outage"
+        ]
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E14",
+      "type": "email",
+      "title": "Mess timings",
+      "content": {
+        "from": "mess@campus.example",
+        "to": "hostel-residents@campus.example",
+        "subject": "Revised mess timings from Monday",
+        "sent_at": "15 Oct 2026, 12:30",
+        "body_md": "Breakfast will now be served 7:15–9:30. Dinner timings are unchanged."
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E15",
+      "type": "log",
+      "title": "bms-alerts.log (other zones, same minute)",
+      "time_label": "03:12",
+      "content": {
+        "lines": [
+          "03:12:02 INFO  temp  C2-TMP-031 value=31.4C (normal range) source=gw-hostel-c",
+          "03:12:07 WARN  water C-ROOF-TANK level=98% (overflow threshold 97%) source=gw-hostel-c",
+          "03:12:09 INFO  door  C-MAIN access denied card=unknown x3 source=gw-hostel-c"
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "T01",
+      "type": "log",
+      "title": "CI pipeline log — nightly-load-test",
+      "time_label": "03:11:40",
+      "is_twist": true,
+      "content": {
+        "lines": [
+          "03:11:40 INFO  ci   pipeline nightly-load-test #1 started on ci-runner-02 (first run on new CI platform)",
+          "03:11:41 WARN  ci   secret BROKER_URL not found in project settings; variable left empty",
+          "03:11:58 INFO  step replay-drill-data: python replay.py --config config.yaml",
+          "03:12:10 INFO  step replay-drill-data: sent 1,204 messages OK",
+          "03:12:11 INFO  ci   pipeline passed"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 1
+      }
+    },
+    {
+      "code": "T02",
+      "type": "chat",
+      "title": "#qa-team",
+      "time_label": "16 Oct 10:02",
+      "is_twist": true,
+      "content": {
+        "channel": "#qa-team",
+        "messages": [
+          {
+            "from": "Sana (QA)",
+            "at": "10:02",
+            "text": "We moved the nightly load test to the new CI yesterday evening. Did anyone copy over the BROKER_URL secret? On the old CI it pointed to bms-staging."
+          },
+          {
+            "from": "Dev (QA)",
+            "at": "10:05",
+            "text": "…no. And the tool falls back to prod when it's empty. Oh no."
+          }
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    }
+  ],
+  "answer": {
+    "root_cause_category": "Hardware failure",
+    "root_cause_md": "Before the twist, the maintenance tickets, wardens' chat and the AI diagnosis all blame sensor C3-SMK-114. Careful teams notice the alarm message carries a 14 August timestamp and an out-of-order sequence number (E03, E04), was published by nx-sim-02 from a CI runner (E05, E12), matches the recorded fire drill (E10), and that the replay tool defaults to the production broker (E11). The fire team found the sensor working (E09).",
+    "responsible": "Faulty smoke sensor C3-SMK-114",
+    "post_twist_category": "Test or staging activity hitting production",
+    "post_twist_responsible": "The QA nightly load test, moved to a new CI platform, ran without its BROKER_URL secret, so the replay tool fell back to the production MQTT broker and replayed the 14 August fire-drill recording; the production broker accepted anonymous publishes and the fire rule needed only one sensor."
+  }
+}

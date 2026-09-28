@@ -1,0 +1,385 @@
+{
+  "code": "CASE-C",
+  "title": "The Vanishing Data",
+  "briefing_md": "ShopSphere is a fictional online marketplace for small sellers.\n\nOn Wednesday 22 October at 7:15 AM, customers opening the app saw \"You have no orders\". Sellers' dashboards were empty too. 3,412 order records from the last 30 days are missing from the production orders table. Nobody on the day team deleted anything.\n\nThe company's senior DBA, Neha, resigned two weeks ago and was working late on Tuesday night. People are already pointing fingers.\n\nFind out where the orders went, who or what is responsible, and how to get them back and stop it happening again.",
+  "root_cause_options": [
+    "Compromised credentials / external attacker",
+    "Deliberate insider action",
+    "Human error during an approved change",
+    "Buggy code release",
+    "Bad or wrongly formatted input data",
+    "AI model or prompt error",
+    "Prompt injection",
+    "Hardware failure",
+    "Test or staging activity hitting production",
+    "Third-party service outage"
+  ],
+  "twist_md": "Two more records have been pulled: the code change (PR #812) behind Tuesday's deployment, and the complete database audit of Neha's Tuesday-night session.",
+  "evidence": [
+    {
+      "code": "E01",
+      "type": "db",
+      "title": "Orders per day (production, queried Wed 08:00)",
+      "content": {
+        "table": "SELECT date(created_at), count(*) FROM orders GROUP BY 1",
+        "columns": [
+          "date",
+          "orders"
+        ],
+        "rows": [
+          [
+            "2026-10-22",
+            "37"
+          ],
+          [
+            "2026-10-21",
+            "0"
+          ],
+          [
+            "2026-10-20",
+            "0"
+          ],
+          [
+            "2026-10-19",
+            "0"
+          ],
+          [
+            "…",
+            "0"
+          ],
+          [
+            "2026-09-22",
+            "0"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E02",
+      "type": "log",
+      "title": "pgaudit (production DB)",
+      "time_label": "Wed 03:00:04",
+      "content": {
+        "lines": [
+          "03:00:04 AUDIT user=svc_archiver DELETE FROM orders WHERE created_at < now() - interval '0 days'   -- 3412 rows",
+          "03:00:04 AUDIT user=svc_archiver COMMIT"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 4
+      }
+    },
+    {
+      "code": "E03",
+      "type": "log",
+      "title": "pgaudit — session neha.k (excerpt)",
+      "time_label": "Tue 23:50",
+      "content": {
+        "lines": [
+          "23:50:12 AUDIT user=neha.k SELECT count(*) FROM orders",
+          "23:51:40 AUDIT user=neha.k SELECT * FROM orders WHERE created_at > now() - interval '30 days'",
+          "23:52:03 AUDIT user=neha.k COPY (SELECT * FROM orders) TO STDOUT   -- client \\copy to orders_handover.csv",
+          "00:18:55 AUDIT user=neha.k disconnect"
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E04",
+      "type": "email",
+      "title": "Resignation — Neha K.",
+      "time_label": "8 Oct",
+      "content": {
+        "from": "neha.k@shopsphere.example",
+        "to": "hr@shopsphere.example; cto@shopsphere.example",
+        "subject": "Resignation",
+        "sent_at": "8 Oct 2026, 19:20",
+        "body_md": "I'm resigning from my role as Senior DBA. My last working day will be Friday 24 October. Honestly I'm not happy with how on-call and releases have been handled this year, but I'll make sure the handover is complete."
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E05",
+      "type": "chat",
+      "title": "#dba",
+      "time_label": "Tue 23:40",
+      "content": {
+        "channel": "#dba",
+        "messages": [
+          {
+            "from": "Neha K.",
+            "at": "23:40",
+            "text": "Doing a final check of the orders tables for the handover doc. Nobody touch prod tonight please."
+          },
+          {
+            "from": "Vikram",
+            "at": "23:44",
+            "text": "ok, all yours"
+          }
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E06",
+      "type": "log",
+      "title": "deploy.log",
+      "time_label": "Tue 18:20",
+      "content": {
+        "lines": [
+          "18:19:40 INFO  ci   pipeline #3391 (main) passed: 214 tests",
+          "18:20:05 INFO  cd   deploying archiver v2.0.0 (PR #812) to production",
+          "18:20:31 INFO  cd   archiver v2.0.0 healthy; next scheduled run 03:00"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 1
+      }
+    },
+    {
+      "code": "E07",
+      "type": "code",
+      "title": "archiver/config.py (v2.0.0)",
+      "content": {
+        "filename": "archiver/config.py",
+        "language": "python",
+        "source": "import os\n\n# Orders older than this many days are copied to S3 and removed from the live DB.\nRETENTION_DAYS = int(os.getenv(\"ARCHIVER_RETENTION_DAYS\", \"0\"))\n\nARCHIVE_BUCKET = os.getenv(\"ARCHIVER_BUCKET\", \"s3://shopsphere-archive\")\n"
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E08",
+      "type": "note",
+      "title": "Production environment file (archiver)",
+      "content": {
+        "body_md": "# /etc/shopsphere/archiver.env  (last edited 2025-11-03)\nRETENTION_DAYS=30\nARCHIVER_BUCKET=s3://shopsphere-archive\nDB_URL=postgres://svc_archiver@orders-db:5432/shop"
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E09",
+      "type": "log",
+      "title": "archiver.log",
+      "time_label": "Wed 03:00:00",
+      "content": {
+        "lines": [
+          "03:00:00 INFO  archiver v2.0.0 started (cron 0 3 * * *)",
+          "03:00:00 INFO  retention_days=0 bucket=s3://shopsphere-archive",
+          "03:00:01 INFO  selected 3412 orders older than 0 days",
+          "03:00:03 INFO  uploaded archive_2026-10-22.parquet",
+          "03:00:04 INFO  deleted 3412 orders from live table",
+          "03:00:05 INFO  done in 5.1s"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 2
+      }
+    },
+    {
+      "code": "E10",
+      "type": "api",
+      "title": "GET /api/v1/orders (customer app)",
+      "time_label": "Wed 07:15",
+      "content": {
+        "method": "GET",
+        "url": "https://api.shopsphere.example/v1/orders?customer=c_88213",
+        "status": 200,
+        "body": {
+          "orders": [],
+          "message": "You have no orders"
+        }
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 5
+      }
+    },
+    {
+      "code": "E11",
+      "type": "chat",
+      "title": "#support",
+      "time_label": "Wed 07:30",
+      "content": {
+        "channel": "#support",
+        "messages": [
+          {
+            "from": "Anjali",
+            "at": "07:30",
+            "text": "Dozens of tickets: customers can't see any orders. Sellers can't see what to ship."
+          },
+          {
+            "from": "Farhan",
+            "at": "07:42",
+            "text": "Heard the DBA who is leaving was on prod last night… coincidence?"
+          }
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 6
+      }
+    },
+    {
+      "code": "E12",
+      "type": "log",
+      "title": "s3 access log (shopsphere-archive)",
+      "time_label": "Wed 03:00:03",
+      "content": {
+        "lines": [
+          "03:00:03 PUT  s3://shopsphere-archive/orders/archive_2026-10-22.parquet  size=2.1MB  rows=3412  by=svc_archiver",
+          "03:00:03 PUT  s3://shopsphere-archive/orders/_manifest.json  by=svc_archiver"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 3
+      }
+    },
+    {
+      "code": "E13",
+      "type": "ai_output",
+      "title": "Ops Copilot incident analysis",
+      "time_label": "Wed 08:20",
+      "content": {
+        "model": "Ops Copilot",
+        "prompt": "Who deleted the orders last night? Give a likely suspect.",
+        "output": "Likely malicious insider: neha.k (Senior DBA, resigning, expressed dissatisfaction). Pattern: bulk export of 30 days of orders at 23:52, asked others not to touch production, then deletion at 03:00 when nobody was watching (possibly a scheduled script). Recommend: revoke neha.k's access, preserve her orders_handover.csv export as evidence, involve legal."
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E14",
+      "type": "log",
+      "title": "cdn.log",
+      "time_label": "Wed 02:00",
+      "content": {
+        "lines": [
+          "02:00:00 INFO  cdn  scheduled purge of product images /static/img/* (41,220 objects)",
+          "02:00:09 INFO  cdn  purge complete; images re-cached on next view"
+        ]
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E15",
+      "type": "email",
+      "title": "Cafeteria update",
+      "content": {
+        "from": "admin@shopsphere.example",
+        "to": "all@shopsphere.example",
+        "subject": "Cafeteria closed on Thursday",
+        "sent_at": "Tue 21 Oct 2026, 12:00",
+        "body_md": "The cafeteria will be closed on Thursday for deep cleaning. Lunch will be served on the terrace."
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E16",
+      "type": "db",
+      "title": "Database roles",
+      "content": {
+        "table": "pg_roles (excerpt)",
+        "columns": [
+          "role",
+          "member_of",
+          "can_delete_orders"
+        ],
+        "rows": [
+          [
+            "svc_archiver",
+            "archiver_rw",
+            "yes"
+          ],
+          [
+            "neha.k",
+            "read_only_dba",
+            "no"
+          ],
+          [
+            "vikram.p",
+            "dba_admin",
+            "yes"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "T01",
+      "type": "code",
+      "title": "PR #812 — archiver v2.0.0 (diff)",
+      "is_twist": true,
+      "content": {
+        "filename": "archiver/config.py (PR #812, merged Tue 17:55)",
+        "language": "diff",
+        "source": "- RETENTION_DAYS = int(os.getenv(\"RETENTION_DAYS\", \"30\"))\n+ RETENTION_DAYS = int(os.getenv(\"ARCHIVER_RETENTION_DAYS\", \"0\"))\n\n# PR description: \"Namespace env vars with ARCHIVER_. Default to 0 so it's\n# obvious when config is missing.\"  Reviewer: approved (tests green)."
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "T02",
+      "type": "log",
+      "title": "pgaudit — full session neha.k",
+      "time_label": "Tue 23:50 – 00:18",
+      "is_twist": true,
+      "content": {
+        "lines": [
+          "23:49:58 AUDIT user=neha.k connect role=read_only_dba",
+          "23:50:12 AUDIT user=neha.k SELECT count(*) FROM orders",
+          "23:51:40 AUDIT user=neha.k SELECT * FROM orders WHERE created_at > now() - interval '30 days'",
+          "23:52:03 AUDIT user=neha.k COPY (SELECT * FROM orders) TO STDOUT   -- client \\copy to orders_handover.csv",
+          "00:10:31 AUDIT user=neha.k SELECT table_name, pg_total_relation_size(table_name::regclass) FROM information_schema.tables",
+          "00:18:55 AUDIT user=neha.k disconnect   -- 0 INSERT, 0 UPDATE, 0 DELETE in session"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    }
+  ],
+  "answer": {
+    "root_cause_category": "Deliberate insider action",
+    "root_cause_md": "Before the twist, the departing DBA's late-night session, bulk export, resignation email and the AI analysis all point at an insider. Careful teams notice the deletion was run by svc_archiver with interval '0 days' (E02, E09), the config reads ARCHIVER_RETENTION_DAYS with default 0 while production only sets RETENTION_DAYS (E07, E08), and Neha's role cannot delete (E16).",
+    "responsible": "Neha K. (departing DBA)",
+    "post_twist_category": "Buggy code release",
+    "post_twist_responsible": "archiver v2.0.0 (PR #812) renamed the retention setting to ARCHIVER_RETENTION_DAYS with a default of 0; production still set RETENTION_DAYS=30, so the 03:00 run archived and deleted every order. The data is safe in s3://shopsphere-archive/orders/archive_2026-10-22.parquet and can be restored."
+  }
+}

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Organiser Checklist — The AI Files</title>
+<style>
+  @page { size: A4; margin: 9mm; }
+  * { box-sizing: border-box; }
+  body { font: 8.6pt/1.28 Arial, Helvetica, sans-serif; color: #111; margin: 0; }
+  h1 { font-size: 13pt; margin: 0 0 1mm; }
+  .sub { font-size: 8pt; color: #444; margin-bottom: 2mm; }
+  .cols { column-count: 2; column-gap: 5mm; }
+  section { break-inside: avoid; border: 0.3mm solid #999; border-radius: 1.5mm; padding: 1.4mm 2mm; margin-bottom: 2mm; }
+  h2 { font-size: 9.2pt; margin: 0 0 0.8mm; background: #111; color: #fff; padding: 0.4mm 1.5mm; border-radius: 1mm; display: inline-block; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { padding-left: 4.2mm; text-indent: -4.2mm; margin: 0.35mm 0; }
+  li::before { content: "☐ "; font-size: 9pt; }
+  .warn { background: #fff3cd; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.2pt; }
+  td { border-top: 0.2mm solid #bbb; padding: 0.7mm 1mm; vertical-align: top; }
+  td:first-child { font-weight: bold; width: 29%; }
+  .fill { display: inline-block; min-width: 20mm; border-bottom: 0.2mm solid #555; }
+  b.k { background: #eee; padding: 0 1mm; border-radius: 0.6mm; }
+</style>
+</head>
+<body>
+<h1>The AI Files — Organiser checklist (keep beside the admin laptop)</h1>
+<div class="sub">Admin URL <span class="fill" style="min-width:55mm"></span> Driver (clicks phases) <span class="fill" style="min-width:30mm"></span> Backup <span class="fill" style="min-width:30mm"></span> Supabase/Vercel owner <span class="fill" style="min-width:30mm"></span></div>
+
+<div class="cols">
+<section>
+  <h2>T-60</h2>
+  <ul>
+    <li>Admin logged in, charger in. Dashboard: phase <b>Waiting</b>, no warnings, 4 cases, no CASE-SAMPLE.</li>
+    <li>Projector on <b>/screen</b>, full screen, shows "Waiting".</li>
+    <li>Check-in desk: Teams page open, slips sorted by code; blank slips for walk-ins.</li>
+    <li>Walk-in: Teams → Add one team → write down code + PIN.</li>
+    <li>Judges have their logins and a printed SOLUTIONS copy each.</li>
+  </ul>
+</section>
+<section>
+  <h2>T-30</h2>
+  <ul>
+    <li>Teams log in (<b>staggered</b> as they check in). Control room: teams shown red = no login / no case.</li>
+    <li>Brief: one person edits the timeline, one the report; show "What do these mean?" tag rules.</li>
+    <li class="warn">Tell teams: <b>do NOT press Log out</b> (it logs out all their devices).</li>
+    <li>Tell teams: saving is automatic; "No connection" = keep the tab open.</li>
+  </ul>
+</section>
+<section>
+  <h2>T-10</h2>
+  <ul>
+    <li>Control room step 1 timer set to <span class="fill"></span> min.</li>
+    <li>Everyone who will click something knows: <b>only the Driver clicks phase buttons</b>.</li>
+  </ul>
+</section>
+<section>
+  <h2>START</h2>
+  <ul>
+    <li><b>1 · Start investigation → Go.</b> Green message appears. Screens switch within ~10 s. Time: <span class="fill"></span></li>
+  </ul>
+</section>
+<section>
+  <h2>INVESTIGATION</h2>
+  <ul>
+    <li>+15 min: every team shows tags &gt; 0 and recent "Last activity". Visit silent teams.</li>
+    <li>Lost time for one team → <b>+5</b> on its row (note: also applies to later phases).</li>
+    <li>Everyone short of time → <b>Extend deadline</b>.</li>
+  </ul>
+</section>
+<section>
+  <h2>LOCK</h2>
+  <ul>
+    <li>Timer at 0 → saving already stopped. <b>2 · Lock initial answers</b> + tick "I'm sure". Drafts become "auto-locked" (still scored).</li>
+  </ul>
+</section>
+<section>
+  <h2>TWIST</h2>
+  <ul>
+    <li><b>3 · Release the twist</b> + "I'm sure", <span class="fill"></span> min. Projector: NEW EVIDENCE. Teams get an editable copy.</li>
+    <li>Walk the room: every team sees the NEW items within ~15 s.</li>
+  </ul>
+</section>
+<section>
+  <h2>FINAL SUBMISSION</h2>
+  <ul>
+    <li><b>4 · Final report</b>, <span class="fill"></span> min (announce). Remind: press <b>Submit</b>, then look for the green "Submitted at".</li>
+  </ul>
+</section>
+<section>
+  <h2>CLOSE</h2>
+  <ul>
+    <li><b>5 · Close submissions</b> + "I'm sure". Note the "Final submitted" count: <span class="fill"></span></li>
+  </ul>
+</section>
+<section>
+  <h2>SCORING</h2>
+  <ul>
+    <li>Results → <b>Run auto-scoring</b>. Leaderboard fills.</li>
+    <li><b>Export CSV now</b> (backup #1) → save to 2 places.</li>
+  </ul>
+</section>
+<section>
+  <h2>JUDGING</h2>
+  <ul>
+    <li>Results → <b>Assign judges</b> (top <span class="fill" style="min-width:8mm"></span>, <span class="fill" style="min-width:6mm"></span> per team).</li>
+    <li>Watch "Judging X/Y fully scored" reach Y/Y.</li>
+  </ul>
+</section>
+<section>
+  <h2>SHORTLIST</h2>
+  <ul>
+    <li>Results → <b>Create shortlist</b> (top <span class="fill" style="min-width:8mm"></span>) only after judging is done.</li>
+    <li><b>6 · Presentations</b>. Projector shows the order. Judges score "Report &amp; presentation".</li>
+  </ul>
+</section>
+<section>
+  <h2>REVEAL</h2>
+  <ul>
+    <li>All presentation scores in. <b>Export CSV</b> (backup #2).</li>
+    <li><b>7 · Reveal results</b> + "I'm sure". Projector: 10th → 1st.</li>
+  </ul>
+</section>
+<section>
+  <h2>ARCHIVE</h2>
+  <ul>
+    <li>Exports saved in 2 places, owner: <span class="fill"></span></li>
+    <li>Do <b>not</b> Reset / Delete teams until the exports are confirmed.</li>
+  </ul>
+</section>
+
+<section class="warn">
+  <h2>IF SOMETHING GOES WRONG</h2>
+  <table>
+    <tr><td>Login fails</td><td>"Wrong code or PIN" → check the slip (AIF-0XX, 6 digits). "Too many attempts" → Teams → More → <b>Reset PIN</b>. "Login server is busy" → wait 30 s; stagger logins; owner raises the Supabase rate limit.</td></tr>
+    <tr><td>Team's data isn't saving</td><td>Look at their save indicator. "No connection" → Wi-Fi, keep the tab open. "Teammate changed this" → copy text, click <i>load the latest version</i>, one editor only. "Time up / closed" → deadline passed or already submitted → <b>+5</b> or <b>unlock</b> if fair. Control room shows their Last activity.</td></tr>
+    <tr><td>Wi-Fi drops (room)</td><td>Pause the clock: <b>Extend deadline</b> by the outage. Edits are kept in open tabs and save on reconnect. Long outage → paper forms + printed case copies.</td></tr>
+    <tr><td>Submission fails</td><td>"Couldn't confirm" → press Submit again (safe, never duplicates). Check the Report page for green "Submitted at", or the Control room status. Unsubmitted work is auto-locked and still scored.</td></tr>
+    <tr><td>Admin clicked something by mistake</td><td><b>STOP, don't click more.</b> Wrong timer → <i>Change timer</i>. Submitted by mistake → <i>unlock</i> (only while that phase runs). Wrong phase → going back needs BACK and does not unlock reports; usually better to continue. Never press Reset during the event.</td></tr>
+    <tr><td>Judge can't access a team</td><td>"View only / not assigned" → Results → <b>Assign judges</b> again (scores are kept) or check the judge is in the top-N list. Presentation box missing → the team isn't shortlisted. Judge can't log in → check email/password (admin can reset it in Supabase); meanwhile note scores on paper.</td></tr>
+  </table>
+</section>
+</div>
+</body>
+</html>

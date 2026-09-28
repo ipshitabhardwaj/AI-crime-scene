@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0b0f14;
+  --color-panel: #121821;
+  --color-line: #243041;
+  --color-muted: #8b98a9;
+  --color-text: #e6edf3;
+  --color-accent: #f5b83d;   /* evidence-tape amber */
+  --color-danger: #ef5b5b;
+  --color-ok: #3fb97f;
+  --font-mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--color-ink);
+  color: var(--color-text);
+}
+
+.tape {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-accent) 0 14px,
+    #111 14px 28px
+  );
+}
+
+@media print {
+  html,
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

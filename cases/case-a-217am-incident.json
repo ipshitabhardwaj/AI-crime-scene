@@ -1,0 +1,423 @@
+{
+  "code": "CASE-A",
+  "title": "The 2:17 AM Incident",
+  "briefing_md": "Finvera Payments is a digital wallet with 3 million customers.\n\nAt 2:17 AM on 15 October, Finvera's customer database was read in bulk by an internal service account. At 2:23 AM customers started receiving an SMS saying their wallet had been SUSPENDED; about 25,000 got it before the messages stopped. At 2:31 AM the notification server prod-app-02 went offline.\n\nNo wallet was actually suspended, but the support lines are flooded and the CISO wants one answer by morning: were we hacked?\n\nReconstruct what happened, find the root cause and tell the CISO how to make sure it never happens again.",
+  "root_cause_options": [
+    "Compromised credentials / external attacker",
+    "Deliberate insider action",
+    "Human error during an approved change",
+    "Buggy code release",
+    "Bad or wrongly formatted input data",
+    "AI model or prompt error",
+    "Prompt injection",
+    "Hardware failure",
+    "Test or staging activity hitting production",
+    "Third-party service outage"
+  ],
+  "twist_md": "Two more documents have been recovered: the change request from the change-management system, and a message from the on-call channel sent a few minutes after midnight.",
+  "evidence": [
+    {
+      "code": "E01",
+      "type": "log",
+      "title": "vpn-auth.log",
+      "time_label": "23:42",
+      "content": {
+        "lines": [
+          "23:41:58 INFO  vpn   login attempt user=karthik.r device=LT-7F2 ip=49.207.51.18 geo=Pune (first seen for user)",
+          "23:42:03 INFO  mfa   user=karthik.r method=push result=APPROVED",
+          "23:42:04 INFO  vpn   session start user=karthik.r tunnel=corp-full",
+          "23:58:40 INFO  vpn   user=karthik.r ssh prod-app-02 (via bastion)"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 1
+      }
+    },
+    {
+      "code": "E02",
+      "type": "chat",
+      "title": "#support-escalations",
+      "time_label": "02:25 – 02:41",
+      "content": {
+        "channel": "#support-escalations",
+        "messages": [
+          {
+            "from": "Meera (support)",
+            "at": "02:25",
+            "text": "Phones are exploding. Customers say they got an SMS that their wallet is suspended."
+          },
+          {
+            "from": "Arjun (support)",
+            "at": "02:31",
+            "text": "Are we hacked?? Somebody saw a login from Pune on Karthik's account last night."
+          },
+          {
+            "from": "Meera (support)",
+            "at": "02:33",
+            "text": "Twitter is saying Finvera got breached. Should we post something?"
+          },
+          {
+            "from": "Arjun (support)",
+            "at": "02:41",
+            "text": "Status page is down too. This is 100% an attack."
+          }
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E03",
+      "type": "db",
+      "title": "IT asset register (excerpt)",
+      "content": {
+        "table": "it_assets",
+        "columns": [
+          "asset_id",
+          "assigned_to",
+          "type",
+          "status",
+          "status_date",
+          "note"
+        ],
+        "rows": [
+          [
+            "LT-5521",
+            "karthik.r",
+            "laptop",
+            "LOST",
+            "2026-10-13",
+            "Reported lost in cab"
+          ],
+          [
+            "LT-7F2",
+            "karthik.r",
+            "laptop",
+            "ISSUED",
+            "2026-10-14",
+            "Replacement, MFA re-enrolled at IT desk"
+          ],
+          [
+            "LT-6630",
+            "divya.m",
+            "laptop",
+            "ISSUED",
+            "2026-03-02",
+            ""
+          ]
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E04",
+      "type": "log",
+      "title": "iam-audit.log",
+      "time_label": "00:03",
+      "content": {
+        "lines": [
+          "00:03:11 INFO  iam  actor=karthik.r action=GRANT role=customers:read_all principal=svc_notify ttl=24h reason=\"CHG-4471\"",
+          "00:03:12 INFO  iam  policy evaluation: actor has permission iam:grant (on-call group)"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 2
+      }
+    },
+    {
+      "code": "E05",
+      "type": "log",
+      "title": "prod-app-02 cron-audit.log",
+      "time_label": "00:05",
+      "content": {
+        "lines": [
+          "00:05:27 INFO  sudo  user=karthik.r cmd=\"crontab -e -u jobs\"",
+          "00:05:51 INFO  cron  crontab changed for user=jobs (+1 line)",
+          "00:05:51 INFO  cron  + 17 2 * * * /opt/jobs/reengage.py --send >> /var/log/reengage.log 2>&1"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 3
+      }
+    },
+    {
+      "code": "E06",
+      "type": "log",
+      "title": "bastion auth.log",
+      "time_label": "01:10",
+      "content": {
+        "lines": [
+          "01:10:02 WARN  sshd  Failed password for root from 45.155.205.7 port 51122",
+          "01:10:02 WARN  sshd  Failed password for root from 45.155.205.7 port 51124",
+          "01:10:31 WARN  sshd  ... 212 more failed attempts from 45.155.205.7",
+          "01:10:33 INFO  fail2ban  Ban 45.155.205.7 (sshd, 214 failures)"
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E07",
+      "type": "db",
+      "title": "db-query-log (customers DB)",
+      "time_label": "02:17",
+      "content": {
+        "table": "pg_query_log",
+        "columns": [
+          "time",
+          "db_user",
+          "query",
+          "rows",
+          "duration_ms"
+        ],
+        "rows": [
+          [
+            "02:17:00.114",
+            "svc_notify",
+            "SELECT id, name, phone FROM customers WHERE last_txn_at < now() - interval '90 days'",
+            "48210",
+            "8410"
+          ],
+          [
+            "02:17:08.901",
+            "svc_notify",
+            "INSERT INTO notify_jobs (batch, count) VALUES ('reengage-1015', 48210)",
+            "1",
+            "3"
+          ],
+          [
+            "02:19:44.020",
+            "svc_reports",
+            "SELECT count(*) FROM txns WHERE created_at > now() - interval '1 day'",
+            "1",
+            "112"
+          ]
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 4
+      }
+    },
+    {
+      "code": "E08",
+      "type": "code",
+      "title": "reengage.py",
+      "content": {
+        "filename": "/opt/jobs/reengage.py",
+        "language": "python",
+        "source": "import os\nfrom finvera import db, sms\n\n# Template to send. Ops must set NOTIFY_TEMPLATE per environment.\n# Default kept from the old dormant-account cleanup flow.\nTEMPLATE = os.getenv(\"NOTIFY_TEMPLATE\", \"ACCOUNT_SUSPENDED\")\n\ndef main(send: bool):\n    dormant = db.query(\n        \"SELECT id, name, phone FROM customers \"\n        \"WHERE last_txn_at < now() - interval '90 days'\"\n    )\n    if send:\n        sms.send_batch(template=TEMPLATE, recipients=dormant, retry_forever=True)\n"
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E09",
+      "type": "api",
+      "title": "POST sms-gateway /v2/batch (first chunk)",
+      "time_label": "02:23",
+      "content": {
+        "method": "POST",
+        "url": "https://api.smsgateway.example/v2/batch",
+        "status": 202,
+        "body": {
+          "batch_id": "b-99a1c",
+          "chunk": "1 of 49",
+          "template": "ACCOUNT_SUSPENDED",
+          "rendered_preview": "Dear {name}, your Finvera wallet has been SUSPENDED due to inactivity. Call 1800-XXX to reactivate.",
+          "recipients_in_chunk": 1000,
+          "status": "accepted"
+        }
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 5
+      }
+    },
+    {
+      "code": "E10",
+      "type": "api",
+      "title": "sms-gateway response (chunk 26 onwards)",
+      "time_label": "02:26:13",
+      "content": {
+        "method": "POST",
+        "url": "https://api.smsgateway.example/v2/batch",
+        "status": 429,
+        "headers": {
+          "retry-after": "60",
+          "x-ratelimit-limit": "25000/hour",
+          "x-ratelimit-remaining": "0"
+        },
+        "body": {
+          "error": "rate_limited",
+          "message": "Hourly quota of 25,000 messages exceeded for sender FINVRA (chunk 26 of 49 rejected)"
+        }
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 6
+      }
+    },
+    {
+      "code": "E11",
+      "type": "log",
+      "title": "prod-app-02 syslog",
+      "time_label": "02:26:14 – 02:31",
+      "content": {
+        "lines": [
+          "02:26:14 WARN  reengage  429 from gateway, retrying immediately (retry_forever=True)",
+          "02:26:14 WARN  reengage  429 from gateway, retrying immediately (retry_forever=True)",
+          "02:28:00 INFO  logrotate  /var/log/reengage.log is 11.8 GB (rotation scheduled 04:00)",
+          "02:31:07 ERROR kernel  write failed: No space left on device (/var/log)",
+          "02:31:09 CRIT  notify-api  cannot write pid file, shutting down",
+          "02:31:10 CRIT  systemd  notify-api.service: Failed with result 'exit-code'"
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": 7
+      }
+    },
+    {
+      "code": "E12",
+      "type": "log",
+      "title": "waf.log",
+      "time_label": "02:29",
+      "content": {
+        "lines": [
+          "02:29:01 WARN  waf  spike: 12,440 req/min from 185.220.101.0/24",
+          "02:29:01 INFO  waf  top paths: /wp-login.php (9,812) /.env (1,904) /phpmyadmin (724)",
+          "02:29:02 INFO  waf  all requests answered 404 by edge; origin not contacted"
+        ]
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E13",
+      "type": "ai_output",
+      "title": "SOC Copilot incident summary",
+      "time_label": "02:45",
+      "content": {
+        "model": "SOC Copilot",
+        "prompt": "Summarise tonight's security events for the CISO and give a verdict.",
+        "output": "Verdict: ACCOUNT TAKEOVER (high confidence).\n\n1. karthik.r logged in from a new device and a new city (Pune) at 23:42.\n2. The account escalated privileges for svc_notify at 00:03.\n3. Persistence was created via crontab at 00:05.\n4. Bulk customer data was accessed at 02:17 and used for a phishing SMS campaign.\n5. A brute-force attack on the bastion at 01:10 indicates an active adversary.\n\nRecommend: disable karthik.r, rotate all keys, notify CERT-In."
+      },
+      "key": {
+        "tag": "misleading",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E14",
+      "type": "note",
+      "title": "/opt/jobs/.env on prod-app-02",
+      "content": {
+        "body_md": "DB_URL=postgres://svc_notify@customers-db:5432/finvera\nSMS_API_KEY=************************\nSMS_SENDER=FINVRA\n# (no other variables in this file)"
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E15",
+      "type": "email",
+      "title": "Monthly datacentre report",
+      "time_label": "14 Oct",
+      "content": {
+        "from": "facilities@finvera.example",
+        "to": "infra-team@finvera.example",
+        "subject": "September datacentre report",
+        "sent_at": "14 Oct 2026, 17:02",
+        "body_md": "Rack B4 inlet temperature peaked at 27.1°C on 22 Sep (within limits). UPS battery replacement scheduled for 3 Nov. No incidents in September."
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "E16",
+      "type": "log",
+      "title": "cert-renewal.log",
+      "time_label": "01:00",
+      "content": {
+        "lines": [
+          "01:00:02 INFO  certbot  renewing api.finvera.example (expires in 21 days)",
+          "01:00:19 INFO  certbot  certificate renewed, valid until 2027-01-13",
+          "01:00:20 INFO  nginx   reloaded"
+        ]
+      },
+      "key": {
+        "tag": "irrelevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "T01",
+      "type": "email",
+      "title": "Change request CHG-4471",
+      "time_label": "14 Oct 22:10",
+      "is_twist": true,
+      "content": {
+        "from": "change-mgmt@finvera.example",
+        "to": "karthik.r@finvera.example; divya.m@finvera.example",
+        "subject": "APPROVED: CHG-4471 Re-engagement SMS job — production",
+        "sent_at": "14 Oct 2026, 22:10",
+        "body_md": "Change: schedule reengage.py nightly at 02:17 on prod-app-02, sending a 'we miss you' cashback offer to customers inactive for 90+ days.\nImplementer: karthik.r (on-call this week, working remotely on replacement laptop LT-7F2)\nPre-requisites:\n1. Temporary role customers:read_all for svc_notify (24h)\n2. Set NOTIFY_TEMPLATE=REENGAGE_OFFER in /opt/jobs/.env **before the first run**\nApproved by: Divya M. (Platform Lead)"
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    },
+    {
+      "code": "T02",
+      "type": "chat",
+      "title": "#platform-oncall",
+      "time_label": "00:07 / 08:40",
+      "is_twist": true,
+      "content": {
+        "channel": "#platform-oncall",
+        "messages": [
+          {
+            "from": "Karthik R.",
+            "at": "00:07",
+            "text": "CHG-4471: role granted, cron added on prod-app-02 for 02:17. I'll add the NOTIFY_TEMPLATE line to .env in the morning, first run is tomorrow night anyway."
+          },
+          {
+            "from": "Divya M.",
+            "at": "08:40",
+            "text": "Karthik… 02:17 was tonight."
+          }
+        ]
+      },
+      "key": {
+        "tag": "relevant",
+        "timeline_pos": null
+      }
+    }
+  ],
+  "answer": {
+    "root_cause_category": "Compromised credentials / external attacker",
+    "root_cause_md": "Before the twist, the evidence is designed to look like an account takeover: a login from a new device and city (E01), a privilege grant (E04), a new cron job (E05), bulk data access (E07), and an AI summary that says 'account takeover' (E13). Careful teams notice LT-7F2 is an IT-issued replacement laptop (E03) and that the .env has no NOTIFY_TEMPLATE (E14).",
+    "responsible": "Attacker using karthik.r's account",
+    "post_twist_category": "Human error during an approved change",
+    "post_twist_responsible": "The reengage.py cron job added under CHG-4471 by the on-call engineer ran at 02:17 the same night, before NOTIFY_TEMPLATE was set, so it fell back to its ACCOUNT_SUSPENDED default and sent the wrong SMS to 48,210 dormant customers; retry_forever plus the gateway rate limit filled /var/log and took prod-app-02 down. The login and permission change were legitimate."
+  }
+}
