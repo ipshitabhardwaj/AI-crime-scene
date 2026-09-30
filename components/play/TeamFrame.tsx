@@ -1,0 +1,30 @@
+import PlayNav, { type NavBadges } from "@/components/play/PlayNav";
+import ReopenNotice from "@/components/play/ReopenNotice";
+import TeamHelp from "@/components/play/TeamHelp";
+import { getPlayContext } from "@/lib/play";
+
+/** Section tabs with live counts + "How to play"; rendered by every team page (not the layout) so counts stay fresh. */
+export default async function TeamFrame() {
+  const ctx = await getPlayContext();
+  if (!ctx.caseRow) return null;
+  const tagged = ctx.evidence.filter((e) => ctx.tags.get(e.id)?.tag).length;
+  const sub = ctx.submissions.get(ctx.shownStage);
+  const steps = ctx.timelineCount(ctx.shownStage);
+  const badges: NavBadges = {
+    evidence: `${tagged}/${ctx.evidence.length} tagged`,
+    timeline: `${steps} step${steps === 1 ? "" : "s"}`,
+    report: sub?.submitted_at ? "submitted ✓" : sub?.locked ? "auto-locked" : "not submitted",
+    reportTone: sub?.submitted_at ? "ok" : sub?.locked ? "accent" : "muted",
+  };
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <PlayNav badges={badges} />
+        </div>
+        <TeamHelp />
+      </div>
+      <ReopenNotice teamCode={ctx.team.team_code} stage={ctx.shownStage} submitted={!!sub?.submitted_at} writable={ctx.reportWritable} />
+    </div>
+  );
+}

@@ -74,11 +74,11 @@ async function signInAndRedirect(key: string, email: string, password: string, e
     .maybeSingle<{ role: AppRole }>();
 
   if (!profile) {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     return { error: "This account is not set up for the event. Ask the organisers." };
   }
   if (expect === "team" && profile.role !== "team") {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     return { error: "Use the Organisers tab to log in." };
   }
 
@@ -100,8 +100,12 @@ export async function loginStaff(_prev: LoginState, formData: FormData): Promise
   return signInAndRedirect(`staff:${email}`, email, password, "staff");
 }
 
+/**
+ * Log out THIS device only. Teams share one account across several laptops,
+ * so the default (global) sign-out would end every teammate's session.
+ */
 export async function logout() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  await supabase.auth.signOut({ scope: "local" });
   redirect("/");
 }

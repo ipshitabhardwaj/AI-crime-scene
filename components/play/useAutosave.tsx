@@ -10,7 +10,8 @@ export type SaveState = "idle" | "pending" | "saving" | "saved" | "offline" | "c
  * - Saves run one at a time (a newer value is saved right after the current one).
  * - Network failures are retried every 4 s and as soon as the browser is back online.
  * - A version conflict (teammate saved on another device) stops saving until reload.
- * - Leaving the page with unsaved changes shows the browser's "leave site?" prompt.
+ * - Leaving the page with unsaved changes shows the browser's "leave site?" prompt;
+ *   navigating inside the app saves the pending change immediately.
  * `flush()` waits for everything pending to be saved (used before submitting).
  */
 export function useAutosave<T>(value: T, save: (v: T) => Promise<ActionResult>, enabled: boolean, delay = 1000) {
@@ -25,6 +26,7 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<ActionResult>, 
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retry = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopped = useRef(false); // conflict / closed: stop trying
+  const stopCode = useRef<string | null>(null);
 
   useEffect(() => {
     saveRef.current = save;
@@ -53,6 +55,7 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<ActionResult>, 
           setState(latest.current === snapshot ? "saved" : "pending");
         } else {
           stopped.current = r.code !== "ERROR";
+          stopCode.current = r.code;
           setError(r.error);
           setState(r.code === "CONFLICT" ? "conflict" : "error");
         }
@@ -90,6 +93,16 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<ActionResult>, 
     };
   }, [serialized, enabled, delay, run]);
 
+  // Editing reopened (organiser gave extra time or unlocked): a "closed"
+  // refusal is no longer final, so start saving again.
+  useEffect(() => {
+    if (enabled && stopped.current && stopCode.current === "CLOSED") {
+      stopped.current = false;
+      stopCode.current = null;
+      if (latest.current !== lastSaved.current) void run();
+    }
+  }, [enabled, run]);
+
   // retry when the network comes back; warn before leaving with unsaved work
   useEffect(() => {
     const online = () => {
@@ -114,6 +127,19 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<ActionResult>, 
     };
   }, [enabled, run]);
 
+  // Leaving the page inside the app (a link, "Next item") unmounts this
+  // component without a beforeunload event: save what is pending right away.
+  const enabledRef = useRef(enabled);
+  useEffect(() => {
+    enabledRef.current = enabled;
+  });
+  useEffect(
+    () => () => {
+      if (enabledRef.current && latest.current !== lastSaved.current && !stopped.current) void runRef.current();
+    },
+    [],
+  );
+
   const flush = useCallback(async () => {
     if (debounce.current) clearTimeout(debounce.current);
     if (retry.current) {
@@ -123,7 +149,14 @@ export function useAutosave<T>(value: T, save: (v: T) => Promise<ActionResult>, 
     await run();
   }, [run]);
 
-  return { state, error, flush };
+  /** Take over a value that is already saved on the server (e.g. a teammate's change). */
+  const adopt = useCallback((v: T) => {
+    const j = JSON.stringify(v);
+    lastSaved.current = j;
+    latest.current = j;
+  }, []);
+
+  return { state, error, flush, adopt };
 }
 
 export function SaveIndicator({ state, error }: { state: SaveState; error: string | null }) {

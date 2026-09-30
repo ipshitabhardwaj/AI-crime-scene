@@ -26,7 +26,7 @@ export default function EvidenceView({ evidence }: { evidence: EvidenceRow }) {
     case "ai_output":
       return <AiView c={c} />;
     case "note":
-      return <div className="whitespace-pre-wrap break-words rounded-lg border border-line bg-panel p-5 leading-relaxed">{String(c.body_md ?? "")}</div>;
+      return <div className="whitespace-pre-wrap break-words rounded-lg border border-line bg-panel p-5 text-[15px] leading-relaxed">{String(c.body_md ?? "")}</div>;
     default:
       return <Raw value={c} />;
   }
@@ -40,26 +40,29 @@ function Raw({ value }: { value: unknown }) {
   return <pre className="overflow-x-auto rounded-lg border border-line bg-black/40 p-4 font-mono text-sm">{JSON.stringify(value, null, 2)}</pre>;
 }
 
+/**
+ * Activity records. Plain-language lines ("02:17  Something happened") are
+ * shown as a readable time list; old technical log lines still render.
+ */
 function LogView({ lines }: { lines: string[] }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-line bg-black/60 p-4 font-mono text-[13px] leading-6">
+    <ol className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-panel">
       {lines.map((line, i) => {
-        const m = line.match(/^(\S+)\s+(.*)$/);
-        const level = /\b(ERROR|FATAL|FAILED|CRIT)\b/.test(line) ? "text-danger" : /\bWARN(ING)?\b/.test(line) ? "text-accent" : "text-text/90";
+        const m = line.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s+(.*)$/);
+        const text = m ? m[2] : line;
+        const tone = /\b(ERROR|FATAL|FAILED|CRIT|DELETED|REFUSED|FULL|FIRE ALERT|EVACUATE|BLOCKED)\b/.test(text)
+          ? "border-l-danger"
+          : /\b(WARN(ING)?|NOTE)\b/.test(text)
+            ? "border-l-accent"
+            : "border-l-transparent";
         return (
-          <div key={i} className="whitespace-pre">
-            <span className="mr-3 select-none text-muted/50">{String(i + 1).padStart(2, " ")}</span>
-            {m ? (
-              <>
-                <span className="text-sky-300">{m[1]}</span> <span className={level}>{m[2]}</span>
-              </>
-            ) : (
-              <span className={level}>{line}</span>
-            )}
-          </div>
+          <li key={i} className={`flex gap-4 border-l-4 px-4 py-2.5 ${tone}`}>
+            <span className="w-20 shrink-0 font-mono text-sm text-accent">{m ? m[1] : ""}</span>
+            <span className="min-w-0 break-words leading-relaxed">{text}</span>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }
 
@@ -112,8 +115,8 @@ function EmailView({ c }: { c: any }) {
 function TableView({ table, columns, rows }: { table?: string; columns: string[]; rows: unknown[][] }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-line">
-      {table && <div className="border-b border-line bg-panel px-4 py-2 font-mono text-sm text-muted">{table}</div>}
-      <table className="w-full font-mono text-[13px]">
+      {table && <div className="border-b border-line bg-panel px-4 py-2 text-sm font-semibold">{table}</div>}
+      <table className="w-full text-sm">
         <thead className="bg-panel text-left text-muted">
           <tr>{columns.map((col) => <th key={col} className="whitespace-nowrap px-3 py-2 font-medium">{col}</th>)}</tr>
         </thead>
@@ -121,7 +124,7 @@ function TableView({ table, columns, rows }: { table?: string; columns: string[]
           {rows.map((r, i) => (
             <tr key={i} className="border-t border-line">
               {asArray<unknown>(r).map((cell, j) => (
-                <td key={j} className="whitespace-nowrap px-3 py-1.5">{cell === null ? <span className="text-muted">NULL</span> : String(cell)}</td>
+                <td key={j} className="px-3 py-2 align-top">{cell === null ? <span className="text-muted">NULL</span> : String(cell)}</td>
               ))}
             </tr>
           ))}

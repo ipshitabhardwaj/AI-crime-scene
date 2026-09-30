@@ -1,4 +1,5 @@
-import Sealed from "@/components/play/Sealed";
+import TeamFrame from "@/components/play/TeamFrame";
+import { EmptyState, PageHeader } from "@/components/ui";
 import ReportForm from "@/components/play/ReportForm";
 import type { ReportFields } from "@/app/actions/team";
 import { getPlayContext } from "@/lib/play";
@@ -10,8 +11,8 @@ const empty: ReportFields = { what_happened: "", root_cause_category: null, root
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" });
 
 export default async function ReportPage() {
-  const { caseRow, evidence, writable, shownStage, submissions, versions, closedReason, event } = await getPlayContext();
-  if (!caseRow) return <Sealed />;
+  const { caseRow, evidence, reportWritable, hypothesisSubmitted, shownStage, submissions, versions, closedReason, event } = await getPlayContext();
+  if (!caseRow) return <EmptyState title="Case sealed">Your case file opens when the investigation starts.</EmptyState>;
 
   const current = submissions.get(shownStage);
   const submitted = !!current?.submitted_at;
@@ -30,17 +31,27 @@ export default async function ReportPage() {
   const version = versions.get(`report_${shownStage}`) ?? 0;
   const next =
     shownStage === "initial"
-      ? "Next: when the organisers release the twist, new evidence appears and you get an editable copy of this report."
+      ? hypothesisSubmitted
+        ? "Your Initial Conclusion is recorded. Keep tagging evidence and improving your timeline until the organisers lock round 1. After the twist you get an editable copy of this page for your Final Report."
+        : "Next: when the organisers release the twist, new evidence appears and you get an editable copy of this page for your Final Report."
       : event?.phase === "closed" || event?.phase === "presentations" || event?.phase === "results"
         ? "Submissions are closed. Judging is in progress."
         : "Nothing more to do. Wait for the results.";
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{shownStage === "initial" ? "Initial conclusion" : "Final case report"}</h1>
-        <p className="text-sm text-muted">{writable ? "Draft saves automatically." : closedReason}</p>
-      </div>
+      <TeamFrame />
+      <PageHeader
+        kicker={shownStage === "initial" ? "Step 3 · before the twist" : "Step 3 · after the twist"}
+        title={shownStage === "initial" ? "Initial Conclusion" : "Final Report"}
+        description={
+          reportWritable
+            ? shownStage === "initial"
+              ? "Your best explanation before the twist. It saves automatically as you type. Press Submit when you are ready — then it is locked."
+              : "Draft saves automatically."
+            : closedReason
+        }
+      />
 
       {submitted && (
         <div role="status" className="rounded-xl border border-ok/50 bg-ok/10 p-4">
@@ -61,13 +72,13 @@ export default async function ReportPage() {
         initial={fields}
         rootCauseOptions={caseRow.root_cause_options}
         evidenceCodes={evidence.map((e) => ({ code: e.code, title: e.title }))}
-        writable={writable}
+        writable={reportWritable}
         version={version}
       />
 
       {shownStage === "final" && initial && (
         <details className="rounded-xl border border-line p-4">
-          <summary className="cursor-pointer text-sm text-muted">Your initial conclusion (locked, for comparison)</summary>
+          <summary className="cursor-pointer text-sm text-muted">Your Initial Conclusion (locked, for comparison)</summary>
           <dl className="mt-3 space-y-2 text-sm">
             <div><dt className="text-muted">Root cause</dt><dd>{initial.root_cause_category ?? "—"}</dd></div>
             <div><dt className="text-muted">Responsible</dt><dd>{initial.responsible || "—"}</dd></div>

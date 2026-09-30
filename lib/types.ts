@@ -27,7 +27,11 @@ export type Team = {
   case_id: string | null;
   auth_user_id: string | null;
   checked_in: boolean;
+  /** whole-event extension (applies to every remaining deadline) */
   extra_minutes: number;
+  /** extension for one phase only (phase_extra_phase) */
+  phase_extra_minutes: number;
+  phase_extra_phase: EventPhase | null;
   is_dummy: boolean;
 };
 
@@ -77,4 +81,6 @@ export type Submission = {
   tags_snapshot: Record<string, EvidenceTag> | null;
   submitted_at: string | null;
   locked: boolean;
+  /** set by the official lock (admin), not by the team's own submission */
+  admin_locked: boolean;
 };

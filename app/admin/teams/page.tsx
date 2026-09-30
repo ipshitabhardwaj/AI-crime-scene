@@ -4,6 +4,7 @@ import { addTeam, deleteAllTeams, deleteDummyTeams, deleteTeam, rebalanceCases, 
 import { getEvent } from "@/lib/event";
 import { createClient } from "@/lib/supabase/server";
 import { ui } from "@/lib/ui";
+import { PageHeader, Stat } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -44,15 +45,28 @@ export default async function TeamsPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="space-y-6">
+      <PageHeader
+        kicker="Registration & check-in"
+        title="Teams"
+        description="Import teams, check them in at the desk, reset PINs and print credential slips."
+        actions={<Link href="/admin/teams/slips" className={ui.btnGhost}>Credential slips</Link>}
+      />
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Teams" value={all.length} note={`${all.length - dummyCount} real · ${dummyCount} dummy`} />
+        <Stat label="Checked in" value={`${all.filter((t) => t.checked_in).length}/${all.length}`} tone={all.length && all.every((t) => t.checked_in) ? "ok" : undefined} />
+        <Stat label="Without case" value={noCase} tone={noCase ? "danger" : "ok"} />
+        <Stat label="Members" value={all.reduce((n, t) => n + t.members.length, 0)} note="registered participants" />
+      </section>
+
       <section className={ui.card}>
-        <h2 className="mb-1 font-semibold">Import from registration form</h2>
+        <h2 className="mb-1 font-semibold">1 · Import from registration form</h2>
         <p className="mb-4 text-sm text-muted">Creates a team code (AIF-001…), a 6-digit PIN and a login for each row, and assigns cases round-robin.</p>
         <ImportTeams />
       </section>
 
       <section className={ui.card}>
         <details>
-          <summary className="cursor-pointer font-semibold">Add one team manually (spot registration)</summary>
+          <summary className="cursor-pointer font-semibold">2 · Add one team manually (spot registration)</summary>
           <form action={addTeam} className="mt-4 grid gap-3 md:grid-cols-2">
             <input name="name" required placeholder="Team name *" className={ui.input} />
             <input name="institution" placeholder="College" className={ui.input} />
@@ -77,13 +91,12 @@ export default async function TeamsPage({ searchParams }: { searchParams: Promis
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="font-semibold">Teams ({all.length})</h2>
+          <h2 className="font-semibold">3 · Check-in and team list ({shown.length}{needle ? ` of ${all.length}` : ""})</h2>
           <form className="flex gap-2">
             <input name="q" defaultValue={q} placeholder="Search name, code, college, member…" className={`${ui.input} w-72`} />
             <button className={ui.btnGhost}>Search</button>
           </form>
           <div className="ml-auto flex flex-wrap gap-2">
-            <Link href="/admin/teams/slips" className={ui.btnGhost}>Credential slips</Link>
             {waiting && (
               <form action={rebalanceCases}>
                 <button className={ui.btnGhost} title="Re-assign every team's case round-robin by team code">Rebalance cases</button>
@@ -98,9 +111,9 @@ export default async function TeamsPage({ searchParams }: { searchParams: Promis
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-line">
+        <div className="overflow-x-auto rounded-xl border border-line bg-panel">
           <table className="w-full text-sm">
-            <thead className="bg-panel text-muted">
+            <thead className="text-muted">
               <tr>
                 <th className={ui.th}>Code</th><th className={ui.th}>Team</th><th className={ui.th}>Members</th>
                 <th className={ui.th}>Case</th><th className={ui.th}>PIN</th><th className={ui.th}>Check-in</th><th className={ui.th}></th>
@@ -108,7 +121,7 @@ export default async function TeamsPage({ searchParams }: { searchParams: Promis
             </thead>
             <tbody>
               {shown.map((t) => (
-                <tr key={t.id} className="border-t border-line align-top">
+                <tr key={t.id} className={`border-t border-line align-top ${t.checked_in ? "" : "bg-ink/40"}`}>
                   <td className={`${ui.td} font-mono`}>{t.team_code}</td>
                   <td className={ui.td}>
                     <div className="font-medium">{t.name}{t.is_dummy && <span className="ml-2 text-xs text-muted">(dummy)</span>}</div>

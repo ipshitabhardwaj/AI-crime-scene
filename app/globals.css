@@ -3,12 +3,14 @@
 @theme {
   --color-ink: #0b0f14;
   --color-panel: #121821;
+  --color-panel2: #172030;
   --color-line: #243041;
   --color-muted: #8b98a9;
   --color-text: #e6edf3;
   --color-accent: #f5b83d;   /* evidence-tape amber */
   --color-danger: #ef5b5b;
   --color-ok: #3fb97f;
+  --color-info: #5aa9e6;
   --font-mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
 }
 
@@ -16,6 +18,23 @@ html,
 body {
   background: var(--color-ink);
   color: var(--color-text);
+}
+
+body {
+  /* faint case-board grid */
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+::selection {
+  background: rgba(245, 184, 61, 0.35);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .tape {
@@ -26,10 +45,26 @@ body {
   );
 }
 
+/* rubber-stamp label, e.g. CONFIDENTIAL / SUBMITTED */
+.stamp {
+  display: inline-block;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  opacity: 0.9;
+}
+
 @media print {
   html,
   body {
     background: white !important;
+    background-image: none !important;
     color: black !important;
   }
 }

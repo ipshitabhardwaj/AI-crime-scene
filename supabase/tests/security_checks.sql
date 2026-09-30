@@ -1,7 +1,7 @@
 -- =====================================================================
 -- The AI Files — database security checks
 --
--- Run in Supabase SQL Editor (paste, Run) AFTER migrations 0001–0003.
+-- Run in Supabase SQL Editor (paste, Run) AFTER migrations 0001–0004.
 -- Everything happens inside one transaction that is ROLLED BACK at the
 -- end: it creates throw-away test users/teams/cases, plays through the
 -- rules as a team, a second team, a judge and an anonymous visitor, and
@@ -124,20 +124,40 @@ select pg_temp.check(public.submit_report('initial', '{}', 999) = (select t from
 select pg_temp.check((select locked and tags_snapshot->>'E01' = 'relevant' from public.submissions where stage = 'initial'), 'submit locks and snapshots tags');
 do $$ begin
   perform public.save_report('initial', '{"what_happened":"changed"}', 2);
-  raise exception 'SECURITY CHECK FAILED: report edited after submit';
+  raise exception 'SECURITY CHECK FAILED: initial hypothesis edited after submit';
 exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
-do $$ begin
-  perform public.save_timeline('initial', '[]', 2);
-  raise exception 'SECURITY CHECK FAILED: timeline edited after submit';
-exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
-do $$ begin
-  perform public.save_tag('00000000-0000-4000-8000-0000000e0001', 'misleading', '');
-  raise exception 'SECURITY CHECK FAILED: tags edited after submit';
-exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
+-- the hypothesis is locked, but investigation continues until the official lock
+select public.save_tag('00000000-0000-4000-8000-0000000e0001', 'misleading', 'still investigating');
+select pg_temp.check(public.save_timeline('initial', '[{"evidence_id":"00000000-0000-4000-8000-0000000e0001","time_label":"1","description":"c"}]', 2) = 3, 'timeline still editable after the hypothesis is submitted');
+select pg_temp.check((select tags_snapshot->>'E01' = 'relevant' from public.submissions where stage = 'initial'), 'hypothesis snapshot unchanged by later tagging');
 reset role;
 
--- ---------- deadlines (team 2) ----------------------------------------
+-- official lock of the initial stage (still in Investigation): everything stops
+select public.admin_lock_stage('initial');
+select pg_temp.check((select admin_locked and tags_snapshot->>'E01' = 'misleading' from public.submissions
+                      where team_id = '00000000-0000-4000-8000-0000000d0001' and stage = 'initial'), 'official lock records admin_locked + fresh tag snapshot');
+select pg_temp.as_user('00000000-0000-4000-8000-00000000a001');
+set local role authenticated;
+do $$ begin
+  perform public.save_tag('00000000-0000-4000-8000-0000000e0001', 'relevant', '');
+  raise exception 'SECURITY CHECK FAILED: tags edited after the official lock';
+exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
+do $$ begin
+  perform public.save_timeline('initial', '[]', 3);
+  raise exception 'SECURITY CHECK FAILED: timeline edited after the official lock';
+exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
+reset role;
+-- per-team unlock (what the Control room does) reopens that team only
+update public.submissions set locked = false, admin_locked = false, submitted_at = null
+ where team_id = '00000000-0000-4000-8000-0000000d0001' and stage = 'initial';
+select pg_temp.as_user('00000000-0000-4000-8000-00000000a001');
+set local role authenticated;
+select public.save_tag('00000000-0000-4000-8000-0000000e0001', 'relevant', 'after unlock');
+reset role;
+
+-- ---------- deadlines + extra time (team 2) ------------------------------
 update public.event set phase_ends_at = now() where id = 1;                -- exactly at the deadline
+update public.submissions set locked = false, admin_locked = false where team_id = '00000000-0000-4000-8000-0000000d0002';
 select pg_temp.as_user('00000000-0000-4000-8000-00000000a002');
 set local role authenticated;
 do $$ begin
@@ -145,11 +165,21 @@ do $$ begin
   raise exception 'SECURITY CHECK FAILED: write accepted at the deadline';
 exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
 reset role;
-update public.teams set extra_minutes = 5 where team_code = 'ZZSEC-2';     -- extension
+update public.teams set phase_extra_minutes = 5, phase_extra_phase = 'twist' where team_code = 'ZZSEC-2';   -- other phase
+set local role authenticated;
+do $$ begin
+  perform public.save_tag('00000000-0000-4000-8000-0000000e0003', 'relevant', '');
+  raise exception 'SECURITY CHECK FAILED: extra time for another phase applied now';
+exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
+reset role;
+update public.teams set phase_extra_phase = 'investigation' where team_code = 'ZZSEC-2';                     -- this phase
 set local role authenticated;
 select public.save_tag('00000000-0000-4000-8000-0000000e0003', 'relevant', 'extended');
 select pg_temp.check((select count(*) from public.evidence_tags) = 1, 'team 2 sees only its own tags');
-select pg_temp.check((select count(*) from public.submissions) = 0, 'team 2 cannot see team 1 submission');
+select pg_temp.check((select count(*) from public.submissions where team_id <> '00000000-0000-4000-8000-0000000d0002') = 0, 'team 2 cannot see team 1 submission');
+select pg_temp.check((select count(*) from public.timeline_entries where team_id <> '00000000-0000-4000-8000-0000000d0002') = 0, 'team 2 cannot see team 1 timeline');
+select pg_temp.check((select count(*) from public.work_versions where team_id <> '00000000-0000-4000-8000-0000000d0002') = 0, 'team 2 cannot see team 1 versions');
+select pg_temp.check((select count(*) from public.teams) = 1, 'team 2 sees only its own team row');
 reset role;
 
 -- ---------- twist -------------------------------------------------------
@@ -161,11 +191,46 @@ select pg_temp.check((select count(*) from public.case_twists) = 1, 'twist text 
 select public.save_tag('00000000-0000-4000-8000-0000000e0002', 'relevant', '');
 select pg_temp.check(public.save_report('final', '{"root_cause_category":"b"}', 0) = 1, 'final report editable in twist');
 reset role;
+-- an extension given in Investigation does not carry over; a whole-event one does
+update public.event set phase_ends_at = now() where id = 1;
+update public.teams set phase_extra_minutes = 30, phase_extra_phase = 'investigation', extra_minutes = 0 where team_code = 'ZZSEC-2';
+select pg_temp.as_user('00000000-0000-4000-8000-00000000a002');
+set local role authenticated;
+do $$ begin
+  perform public.save_tag('00000000-0000-4000-8000-0000000e0003', 'misleading', '');
+  raise exception 'SECURITY CHECK FAILED: Investigation extra time carried into the twist';
+exception when others then if sqlerrm not like 'CLOSED%' then raise; end if; end $$;
+reset role;
+update public.teams set extra_minutes = 5 where team_code = 'ZZSEC-2';
+set local role authenticated;
+select public.save_tag('00000000-0000-4000-8000-0000000e0003', 'misleading', 'whole-event extension');
+reset role;
 
--- ---------- judge -------------------------------------------------------
+-- ---------- judge: nothing before submissions close ---------------------
 select pg_temp.as_user('00000000-0000-4000-8000-00000000a003');
 set local role authenticated;
-select pg_temp.check((select count(*) from public.submissions where team_id = '00000000-0000-4000-8000-0000000d0001') >= 1, 'judge reads submissions');
+select pg_temp.check((select count(*) from public.submissions) = 0, 'judge sees no team work before Closed');
+select pg_temp.check((select count(*) from public.answer_key) = 0, 'judge sees no answer key before Closed');
+select pg_temp.check((select count(*) from public.answer_evidence) = 0, 'judge sees no evidence key before Closed');
+select pg_temp.check((select count(*) from public.evidence) = 0, 'judge sees no case evidence before Closed');
+select pg_temp.check((select count(*) from public.teams) = 0, 'judge sees no teams before Closed');
+do $$ begin
+  insert into public.judge_scores (judge_id, team_id, criterion, score) values ('00000000-0000-4000-8000-00000000a003', '00000000-0000-4000-8000-0000000d0001', 'reasoning', 7);
+  raise exception 'SECURITY CHECK FAILED: judge scored before Closed';
+exception when insufficient_privilege then null; end $$;
+reset role;
+
+-- ---------- judge: after close, assigned team only ----------------------
+update public.event set phase = 'closed', phase_ends_at = null where id = 1;
+select pg_temp.as_user('00000000-0000-4000-8000-00000000a003');
+set local role authenticated;
+select pg_temp.check((select count(*) from public.submissions where team_id = '00000000-0000-4000-8000-0000000d0001') >= 1, 'judge reads the assigned team''s submissions');
+select pg_temp.check((select count(*) from public.submissions where team_id <> '00000000-0000-4000-8000-0000000d0001') = 0, 'judge cannot read an unassigned team''s submissions');
+select pg_temp.check((select count(*) from public.evidence_tags where team_id <> '00000000-0000-4000-8000-0000000d0001') = 0, 'judge cannot read an unassigned team''s tags');
+select pg_temp.check((select count(*) from public.teams) = 1, 'judge sees only the assigned team row');
+select pg_temp.check((select count(*) from public.answer_key) = 1, 'judge sees the answer key of the assigned team''s case only');
+select pg_temp.check((select count(*) from public.evidence where case_id = '00000000-0000-4000-8000-0000000c0002') = 0, 'judge cannot read another case''s evidence');
+select pg_temp.check((select count(*) from public.profiles) = 1, 'judge sees only its own profile');
 select pg_temp.check((select count(*) from public.team_credentials) = 0, 'judge cannot read PINs');
 insert into public.judge_scores (judge_id, team_id, criterion, score) values ('00000000-0000-4000-8000-00000000a003', '00000000-0000-4000-8000-0000000d0001', 'reasoning', 7);
 do $$ begin
@@ -185,6 +250,25 @@ do $$ begin
   if exists (select 1 from public.auto_scores where tagging = 15) then
     raise exception 'SECURITY CHECK FAILED: judge changed auto scores';
   end if;
+exception when insufficient_privilege then null; end $$;
+reset role;
+
+-- ---------- participants never see answer keys or other teams -----------
+select pg_temp.as_user('00000000-0000-4000-8000-00000000a001');
+set local role authenticated;
+select pg_temp.check((select count(*) from public.answer_key) = 0, 'closed: team still cannot read answer_key');
+select pg_temp.check((select count(*) from public.answer_evidence) = 0, 'closed: team still cannot read answer_evidence');
+select pg_temp.check((select count(*) from public.auto_scores) = 0, 'closed: team cannot read scores');
+select pg_temp.check((select count(*) from public.submissions where team_id <> '00000000-0000-4000-8000-0000000d0001') = 0, 'closed: team cannot read another team''s work');
+reset role;
+
+-- ---------- results: scores are final ------------------------------------
+update public.event set phase = 'results' where id = 1;
+select pg_temp.as_user('00000000-0000-4000-8000-00000000a003');
+set local role authenticated;
+do $$ begin
+  update public.judge_scores set score = 10 where team_id = '00000000-0000-4000-8000-0000000d0001';
+  raise exception 'SECURITY CHECK FAILED: judge changed a score after the reveal';
 exception when insufficient_privilege then null; end $$;
 reset role;
 

@@ -5,6 +5,8 @@ import { UserError, confirmed, runAction } from "@/lib/admin-action";
 import { requireRole } from "@/lib/auth";
 import { computeAutoScores, getLeaderboard } from "@/lib/results";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { JUDGING_ADMIN_PHASES } from "@/lib/state-machine";
+import type { EventPhase } from "@/lib/constants";
 
 const PATH = "/admin/results";
 const AFTER_CLOSE = ["closed", "presentations", "results"];
@@ -37,6 +39,10 @@ export async function assignJudges(formData: FormData) {
   await runAction(PATH, async () => {
     const topN = Math.max(1, Math.min(200, Number(formData.get("topN") || 20)));
     const perTeam = Math.max(1, Math.min(10, Number(formData.get("perTeam") || 2)));
+    if (!JUDGING_ADMIN_PHASES.includes((await phase()) as EventPhase)) {
+      throw new UserError("Judging is set up after submissions are closed (phase Closed or Presentations).");
+    }
+
     const includeDummy = formData.get("includeDummy") === "on";
     const db = createAdminClient();
 
@@ -74,6 +80,10 @@ export async function createShortlist(formData: FormData) {
   await requireRole("admin");
   await runAction(PATH, async () => {
     const size = Math.max(1, Math.min(50, Number(formData.get("size") || 10)));
+    if (!JUDGING_ADMIN_PHASES.includes((await phase()) as EventPhase)) {
+      throw new UserError("Judging is set up after submissions are closed (phase Closed or Presentations).");
+    }
+
     const includeDummy = formData.get("includeDummy") === "on";
     const db = createAdminClient();
     const { count: existing } = await db.from("shortlist").select("team_id", { count: "exact", head: true });
@@ -83,7 +93,14 @@ export async function createShortlist(formData: FormData) {
         `A shortlist already exists${presScores ? ` and ${presScores} presentation score(s) were given` : ""}. Re-creating it can change who presents. Tick “replace” to continue.`,
       );
     }
-    const board = (await getLeaderboard(db)).filter((r) => includeDummy || !r.is_dummy).slice(0, size);
+    const full = (await getLeaderboard(db)).filter((r) => includeDummy || !r.is_dummy);
+    const unfinished = full.filter((r) => r.judgesAssigned > 0 && r.judgeCount < r.judgesAssigned).length;
+    if (unfinished > 0 && formData.get("incomplete") !== "on") {
+      throw new UserError(
+        `${unfinished} assigned team(s) are not fully judged yet, so the shortlist would favour teams that are. Wait for the judges, or tick “shortlist anyway”.`,
+      );
+    }
+    const board = full.slice(0, size);
     await db.from("shortlist").delete().neq("team_id", "00000000-0000-0000-0000-000000000000");
     if (board.length) {
       const { error } = await db.from("shortlist").insert(board.map((r, i) => ({ team_id: r.id, presentation_order: i + 1 })));

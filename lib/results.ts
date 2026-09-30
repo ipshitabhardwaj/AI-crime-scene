@@ -3,17 +3,17 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { selectAll } from "@/lib/db";
 import { judgePoints, scoreAuto, selectScoredAnswers, type KeyEvidence, type Tag } from "@/lib/scoring";
 
-type EvidenceKeyRow = { id: string; code: string; case_id: string; answer_evidence: { tag: Tag; timeline_pos: number | null } | null };
+type EvidenceKeyRow = { id: string; code: string; case_id: string; is_twist: boolean; answer_evidence: { tag: Tag; timeline_pos: number | null } | null };
 
 /** Compute and store auto_scores for every team that has a case. Returns count. */
 export async function computeAutoScores(db: SupabaseClient): Promise<number> {
   // Every read pages through all rows: the API caps responses at 1,000 rows.
   const [teams, ev, answers, subs, tags, tl] = await Promise.all([
     selectAll<{ id: string; case_id: string | null }>((a, b) => db.from("teams").select("id, case_id").not("case_id", "is", null).order("id").range(a, b)),
-    selectAll<EvidenceKeyRow>((a, b) => db.from("evidence").select("id, code, case_id, answer_evidence(tag, timeline_pos)").order("id").range(a, b)),
+    selectAll<EvidenceKeyRow>((a, b) => db.from("evidence").select("id, code, case_id, is_twist, answer_evidence(tag, timeline_pos)").order("id").range(a, b)),
     selectAll<{ case_id: string; post_twist_category: string }>((a, b) => db.from("answer_key").select("case_id, post_twist_category").order("case_id").range(a, b)),
-    selectAll<{ team_id: string; stage: string; root_cause_category: string | null; tags_snapshot: Record<string, Tag> | null }>((a, b) =>
-      db.from("submissions").select("team_id, stage, root_cause_category, tags_snapshot").order("team_id").order("stage").range(a, b),
+    selectAll<{ team_id: string; stage: string; root_cause_category: string | null; key_evidence: string[] | null; tags_snapshot: Record<string, Tag> | null }>((a, b) =>
+      db.from("submissions").select("team_id, stage, root_cause_category, key_evidence, tags_snapshot").order("team_id").order("stage").range(a, b),
     ),
     selectAll<{ team_id: string; evidence_id: string; tag: Tag | null }>((a, b) =>
       db.from("evidence_tags").select("team_id, evidence_id, tag").order("team_id").order("evidence_id").range(a, b),
@@ -28,7 +28,7 @@ export async function computeAutoScores(db: SupabaseClient): Promise<number> {
   for (const e of ev ?? []) {
     if (!e.answer_evidence) continue;
     const list = keyByCase.get(e.case_id) ?? [];
-    list.push({ id: e.code, tag: e.answer_evidence.tag, timeline_pos: e.answer_evidence.timeline_pos });
+    list.push({ id: e.code, tag: e.answer_evidence.tag, timeline_pos: e.answer_evidence.timeline_pos, twist: e.is_twist });
     keyByCase.set(e.case_id, list);
   }
   const postTwist = new Map(answers.map((a) => [a.case_id, a.post_twist_category as string]));
@@ -52,9 +52,19 @@ export async function computeAutoScores(db: SupabaseClient): Promise<number> {
         liveTags,
         finalTimeline: codes("final"),
         initialTimeline: codes("initial"),
+        initialCited: initial?.key_evidence ?? [],
+        finalCited: final?.key_evidence ?? [],
       }),
     });
-    return { team_id: t.id, tagging: s.tagging, timeline: s.timeline, root_cause: s.root_cause, adaptability: s.adaptability, computed_at: new Date().toISOString() };
+    return {
+      team_id: t.id,
+      tagging: s.tagging,
+      timeline: s.timeline,
+      hypothesis: s.hypothesis,
+      root_cause: s.root_cause,
+      evidence_support: s.evidence_support,
+      computed_at: new Date().toISOString(),
+    };
   });
 
   if (rows.length) {
@@ -64,6 +74,8 @@ export async function computeAutoScores(db: SupabaseClient): Promise<number> {
   return rows.length;
 }
 
+export type AutoRow = { tagging: number; timeline: number; hypothesis: number; root_cause: number; evidence_support: number; total: number };
+
 export type LeaderRow = {
   id: string;
   team_code: string;
@@ -71,7 +83,7 @@ export type LeaderRow = {
   institution: string | null;
   is_dummy: boolean;
   case_code: string | null;
-  auto: { tagging: number; timeline: number; root_cause: number; adaptability: number; total: number } | null;
+  auto: AutoRow | null;
   judge: ReturnType<typeof judgePoints>;
   judgeCount: number;
   judgesAssigned: number;
@@ -85,7 +97,7 @@ export async function getLeaderboard(db: SupabaseClient): Promise<LeaderRow[]> {
   type TeamRow = { id: string; team_code: string; name: string; institution: string | null; is_dummy: boolean; cases: { code: string } | null };
   const [teams, autos, js, ja, sl, subs] = await Promise.all([
     selectAll<TeamRow>((a, b) => db.from("teams").select("id, team_code, name, institution, is_dummy, cases(code)").order("team_code").range(a, b)),
-    selectAll<{ team_id: string; tagging: number; timeline: number; root_cause: number; adaptability: number; total: number }>((a, b) =>
+    selectAll<AutoRow & { team_id: string }>((a, b) =>
       db.from("auto_scores").select("*").order("team_id").range(a, b),
     ),
     selectAll<{ judge_id: string; team_id: string; criterion: string; score: number }>((a, b) =>
@@ -103,7 +115,14 @@ export async function getLeaderboard(db: SupabaseClient): Promise<LeaderRow[]> {
     const scores = js.filter((x) => x.team_id === t.id);
     const judge = judgePoints(scores);
     const auto = a
-      ? { tagging: Number(a.tagging), timeline: Number(a.timeline), root_cause: Number(a.root_cause), adaptability: Number(a.adaptability), total: Number(a.total) }
+      ? {
+          tagging: Number(a.tagging),
+          timeline: Number(a.timeline),
+          hypothesis: Number(a.hypothesis),
+          root_cause: Number(a.root_cause),
+          evidence_support: Number(a.evidence_support),
+          total: Number(a.total),
+        }
       : null;
     return {
       id: t.id,

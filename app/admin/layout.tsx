@@ -3,17 +3,19 @@ import AppHeader from "@/components/AppHeader";
 import Flash from "@/components/Flash";
 import AdminNav from "@/components/admin/AdminNav";
 import { requireRole } from "@/lib/auth";
+import { getEvent } from "@/lib/event";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole("admin");
+  const event = await getEvent();
   return (
     <div className="min-h-screen">
       <div className="print:hidden">
         <AppHeader area="Control room" who={session.profile.display_name ?? session.email ?? "Admin"} />
       </div>
-      <AdminNav />
+      <AdminNav event={event} />
       <Suspense>
         <Flash />
       </Suspense>

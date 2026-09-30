@@ -1,7 +1,7 @@
 {
   "code": "CASE-B",
   "title": "The AI That Lied",
-  "briefing_md": "Kiranaa Mart is a fictional grocery chain with 120 stores in four regions.\n\nEvery Monday at 6:00 AM an AI assistant, InsightBot, writes the weekly sales report for management. This Monday (20 October) it reported that North region revenue had crashed by 61% and recommended a closure review for nine North stores. The CEO forwarded it to the board at 9:10 AM.\n\nThe North store managers say their weekend was normal. The analytics team says the new AI model is hallucinating.\n\nFind out where the wrong numbers really came from: the model, the prompt, the data, the API or a person.",
+  "briefing_md": "Kiranaa Mart is a grocery chain with 120 stores in four regions.\n\nEvery Monday at 6:00 AM an AI assistant, InsightBot, writes the weekly sales report for the bosses. This Monday (20 October) it said:\n• North region sales crashed by 61%.\n• Nine North stores should be considered for closing.\n\nThe CEO forwarded it to the board at 9:10 AM. But the North store managers say their weekend was normal, and the analytics team says the new AI is making things up.\n\nYour job: find out where the wrong numbers really came from — the AI, its instructions, the data, a system, or a person.",
   "root_cause_options": [
     "Compromised credentials / external attacker",
     "Deliberate insider action",
@@ -14,7 +14,7 @@
     "Test or staging activity hitting production",
     "Third-party service outage"
   ],
-  "twist_md": "The IT team has dug out an email from the POS (billing software) vendor that was sitting unread in a shared mailbox.",
+  "twist_md": "The IT team has found an email from the company that makes the stores' billing machines. It was sitting unread in a shared mailbox.",
   "evidence": [
     {
       "code": "E01",
@@ -34,13 +34,12 @@
     {
       "code": "E02",
       "type": "log",
-      "title": "model-registry.log",
+      "title": "AI version change record",
       "time_label": "Fri 17 Oct 15:40",
       "content": {
         "lines": [
-          "15:40:02 INFO  registry  InsightBot model changed: insight-llm-v2 -> insight-llm-v3",
-          "15:40:02 INFO  registry  change by: ml-platform (release RL-208)",
-          "15:41:10 INFO  registry  smoke test passed (12/12)"
+          "15:40  InsightBot upgraded from version v2 to v3 (by the AI team).",
+          "15:41  Quick check after the upgrade: passed 12 of 12 tests."
         ]
       },
       "key": {
@@ -51,33 +50,33 @@
     {
       "code": "E03",
       "type": "db",
-      "title": "Prompt edit history",
+      "title": "InsightBot instructions — edit history",
       "content": {
-        "table": "prompt_versions",
+        "table": "Changes to InsightBot's instructions",
         "columns": [
-          "version",
-          "edited_at",
-          "edited_by",
-          "change"
+          "Version",
+          "When",
+          "By",
+          "Change"
         ],
         "rows": [
           [
             "v14",
             "Fri 17 Oct 16:02",
-            "rohit.s",
-            "Added: 'Be decisive. Always end with one clear recommendation.'"
+            "Rohit",
+            "Added: \"Be decisive. Always end with one clear recommendation.\""
           ],
           [
             "v13",
             "Mon 29 Sep 11:15",
-            "rohit.s",
-            "Added regional breakdown section"
+            "Rohit",
+            "Added a section per region"
           ],
           [
             "—",
             "Sun 19 Oct 22:14",
-            "rohit.s",
-            "(viewed, no change)"
+            "Rohit",
+            "(only looked, no change)"
           ]
         ]
       },
@@ -97,17 +96,17 @@
           {
             "from": "Priya",
             "at": "09:30",
-            "text": "The CEO is asking about the North numbers. The new model is hallucinating, right? It only went live on Friday."
+            "text": "The CEO is asking about the North numbers. The new AI version is making things up, right? It only went live on Friday."
           },
           {
             "from": "Rohit",
             "at": "09:34",
-            "text": "Could also be my 'be decisive' prompt change making it exaggerate. Rolling back to v2 + prompt v13 now."
+            "text": "Could also be my 'be decisive' instruction change making it exaggerate. Switching back to the old AI version and the old instructions now."
           },
           {
             "from": "Priya",
             "at": "09:51",
-            "text": "Rolled back and re-ran. Same North numbers. Weird."
+            "text": "Switched back and ran it again. Same North numbers. Weird."
           }
         ]
       },
@@ -119,15 +118,15 @@
     {
       "code": "E05",
       "type": "db",
-      "title": "warehouse.sales_weekly (excerpt)",
+      "title": "Weekly sales table (excerpt)",
       "content": {
-        "table": "sales_weekly (week 13–19 Oct)",
+        "table": "Sales for the week 13–19 Oct",
         "columns": [
-          "store",
-          "region",
-          "revenue_inr",
-          "bills",
-          "avg_bill_inr"
+          "Store",
+          "Region",
+          "Sales (₹)",
+          "Bills",
+          "Average bill (₹)"
         ],
         "rows": [
           [
@@ -147,21 +146,21 @@
           [
             "N-03",
             "North",
-            "648,250.00",
+            "6,48,250.00",
             "5,702",
             "113.69"
           ],
           [
             "S-11",
             "South",
-            "601,930.50",
+            "6,01,930.50",
             "5,311",
             "113.34"
           ],
           [
             "E-02",
             "East",
-            "577,112.00",
+            "5,77,112.00",
             "5,080",
             "113.61"
           ]
@@ -174,12 +173,10 @@
     },
     {
       "code": "E06",
-      "type": "code",
-      "title": "etl/parse_pos.py",
+      "type": "note",
+      "title": "Data team notes — how store sales files are read",
       "content": {
-        "filename": "etl/parse_pos.py",
-        "language": "python",
-        "source": "def parse_amount(raw: str) -> float:\n    # POS exports amounts like \"1,234.50\" -> strip thousands separators\n    return float(raw.replace(\",\", \"\"))\n\ndef parse_row(row):\n    return {\n        \"store\": row[\"store_id\"],\n        \"amount\": parse_amount(row[\"amount\"]),\n        \"bills\": int(row[\"bills\"]),\n    }\n"
+        "body_md": "Every night a program reads the sales file sent by each store.\n\nRule for money amounts: remove every comma, then read the number.\nExample from our design notes: \"1,234.50\" → 1234.50 ✓\n\nThis works because store files always write amounts like 1,234.50 (comma between thousands, dot before the paise)."
       },
       "key": {
         "tag": "relevant",
@@ -189,15 +186,15 @@
     {
       "code": "E07",
       "type": "log",
-      "title": "etl-nightly.log",
+      "title": "Nightly sales upload record",
       "time_label": "Mon 02:00",
       "content": {
         "lines": [
-          "02:00:01 INFO  etl  nightly load started (120 store files)",
-          "02:03:44 INFO  etl  parsed 120 files, 0 parse errors",
-          "02:03:45 WARN  quality  9 stores: revenue mean dropped 99.9% vs last week (N-02, N-04, N-05, N-07, N-08, N-11, N-12, N-14, N-15)",
-          "02:03:45 INFO  quality  alert channel #data-quality is MUTED until 31 Oct (set by priya.k: 'too noisy during festive sale')",
-          "02:04:10 INFO  etl  load complete -> warehouse.sales_weekly"
+          "02:00  Nightly upload started: 120 store files.",
+          "02:03  All 120 files read. 0 errors.",
+          "02:03  WARNING: 9 North stores' sales dropped 99.9% compared with last week (N-02, N-04, N-05, N-07, N-08, N-11, N-12, N-14, N-15).",
+          "02:03  This warning was NOT shown to anyone: the #data-quality alert channel is muted until 31 Oct (\"too noisy during the festive sale\" — Priya).",
+          "02:04  Upload finished. Sales table updated."
         ]
       },
       "key": {
@@ -207,11 +204,33 @@
     },
     {
       "code": "E08",
-      "type": "note",
-      "title": "POS export — store N-04 (raw CSV, first lines)",
+      "type": "db",
+      "title": "Store N-04 — sales file received overnight (first lines)",
       "time_label": "Mon 01:00",
       "content": {
-        "body_md": "store_id,date,bills,amount\nN-04,2026-10-19,812,\"91.732,50\"\nN-04,2026-10-18,845,\"95.905,00\"\nN-04,2026-10-17,779,\"88.330,75\""
+        "table": "Sales file from store N-04",
+        "columns": [
+          "Date",
+          "Bills",
+          "Amount"
+        ],
+        "rows": [
+          [
+            "19 Oct",
+            "812",
+            "91.732,50"
+          ],
+          [
+            "18 Oct",
+            "845",
+            "95.905,00"
+          ],
+          [
+            "17 Oct",
+            "779",
+            "88.330,75"
+          ]
+        ]
       },
       "key": {
         "tag": "relevant",
@@ -220,26 +239,11 @@
     },
     {
       "code": "E09",
-      "type": "api",
-      "title": "POST insightbot /v1/generate (request)",
+      "type": "note",
+      "title": "What InsightBot was given to write the report",
       "time_label": "Mon 06:00:00",
       "content": {
-        "method": "POST",
-        "url": "https://insightbot.internal/v1/generate",
-        "status": 200,
-        "body": {
-          "template": "weekly_report_v14",
-          "attachments": {
-            "regional_totals_inr": {
-              "North": 3800412.4,
-              "South": 31204118.0,
-              "East": 24110230.5,
-              "West": 28733901.0
-            },
-            "north_last_week_inr": 9743020.0
-          },
-          "note": "North total includes nine stores with weekly revenue under ₹1,000 each"
-        }
+        "body_md": "Data sent to InsightBot at 06:00:00 (it writes the report from these numbers):\n\n• North, this week: ₹38,00,412\n• North, last week: ₹97,43,020\n• South: ₹3,12,04,118 · East: ₹2,41,10,230 · West: ₹2,87,33,901\n\nAutomatic note attached: \"North total includes nine stores with weekly sales under ₹1,000 each.\" "
       },
       "key": {
         "tag": "relevant",
@@ -266,9 +270,9 @@
     {
       "code": "E11",
       "type": "note",
-      "title": "Model evaluation dashboard",
+      "title": "AI accuracy test results",
       "content": {
-        "body_md": "Number-faithfulness test (does the report repeat the input figures exactly?)\n\ninsight-llm-v2: 91.0% (last run 10 Oct)\ninsight-llm-v3: 94.2% (last run 16 Oct)\n\nBoth models copy the totals they are given; neither calculates totals itself."
+        "body_md": "AI accuracy test: does the report repeat the numbers it is given exactly?\n\nAI version v2: 91.0% correct (tested 10 Oct)\nAI version v3: 94.2% correct (tested 16 Oct)\n\nBoth versions only copy the totals they are given; neither adds up totals itself."
       },
       "key": {
         "tag": "relevant",
@@ -302,23 +306,11 @@
     },
     {
       "code": "E13",
-      "type": "api",
-      "title": "GET weather-alerts /north",
+      "type": "note",
+      "title": "Weather alert — North region",
       "time_label": "Sat–Sun",
       "content": {
-        "method": "GET",
-        "url": "https://weather.example/v1/alerts?region=north",
-        "status": 200,
-        "body": {
-          "alerts": [
-            {
-              "type": "heavy_rain",
-              "from": "2026-10-18T06:00",
-              "to": "2026-10-19T20:00",
-              "severity": "yellow"
-            }
-          ]
-        }
+        "body_md": "Weather alert for the North region: heavy rain (yellow alert) from Saturday 18 Oct, 6 AM, to Sunday 19 Oct, 8 PM."
       },
       "key": {
         "tag": "misleading",
@@ -344,13 +336,12 @@
     {
       "code": "E15",
       "type": "log",
-      "title": "hr-payroll.log",
+      "title": "HR salary record",
       "time_label": "Mon 01:30",
       "content": {
         "lines": [
-          "01:30:00 INFO  payroll  monthly export started (2,340 employees)",
-          "01:34:12 INFO  payroll  export complete -> bank-upload/2026-10.csv",
-          "01:34:13 INFO  payroll  checksum ok"
+          "01:30  Monthly salary file started (2,340 employees).",
+          "01:34  Salary file finished and sent to the bank. Check passed."
         ]
       },
       "key": {
@@ -391,15 +382,15 @@
     {
       "code": "T01",
       "type": "email",
-      "title": "BillEase POS release 5.2 notice",
+      "title": "Billing machine update 5.2 notice",
       "time_label": "Sun 19 Oct 23:00",
       "is_twist": true,
       "content": {
-        "from": "releases@billease-pos.example",
+        "from": "releases@billease.example",
         "to": "it-shared@kiranaamart.example",
-        "subject": "BillEase 5.2 rolling out tonight to pilot stores",
+        "subject": "Billing machine update 5.2 — installing tonight at trial stores",
         "sent_at": "Fri 17 Oct 2026, 18:30",
-        "body_md": "BillEase 5.2 will auto-install on Sunday 19 Oct at 23:00 for your pilot group (North region, 9 stores).\n\nWhat's new: regional number formatting. CSV exports now use the store locale by default, e.g. 1.234,56 (dot for thousands, comma for decimals). To keep the old format, set export.locale=en-IN before the update."
+        "body_md": "Update 5.2 for your billing machines installs automatically on Sunday 19 Oct at 23:00 for your trial group (North region, 9 stores).\n\nWhat's new: amounts in the nightly sales files will be written in European style, for example 1.234,56 (dot between thousands, comma before the paise).\n\nTo keep the old style, change each machine's \"export format\" setting before the update."
       },
       "key": {
         "tag": "relevant",
@@ -409,9 +400,9 @@
   ],
   "answer": {
     "root_cause_category": "AI model or prompt error",
-    "root_cause_md": "Before the twist, the Friday model upgrade (E02), the 'be decisive' prompt change (E03) and the analytics chat (E04) point at the AI. Careful teams see that rolling back changed nothing (E04), that the model only repeats the totals it is given (E09, E11), and that the raw CSV uses a comma as the decimal separator (E08) which the parser strips (E06).",
+    "root_cause_md": "Before the twist, the Friday AI upgrade (E02), the 'be decisive' instruction change (E03) and the analytics chat (E04) point at the AI. Careful teams see that switching back changed nothing (E04), that the AI only repeats the totals it is given (E09, E11), that store N-04's file writes amounts as 91.732,50 (E08) while the reader simply removes commas (E06), and the muted warning (E07).",
     "responsible": "InsightBot model upgrade (insight-llm-v3) / prompt v14",
     "post_twist_category": "Bad or wrongly formatted input data",
-    "post_twist_responsible": "BillEase POS 5.2 switched the nine North pilot stores' CSV exports to the 1.234,56 number format; etl/parse_pos.py strips commas, so every amount became about 1/1000th of its real value; the data-quality alert fired but its channel was muted. The AI reported its input faithfully."
+    "post_twist_responsible": "Billing machine update 5.2 switched the nine North trial stores' sales files to the 1.234,56 number style; the nightly reader removes commas, so every amount became about 1/1000th of its real value; the warning fired but its channel was muted. The AI reported the numbers it was given faithfully."
   }
 }

@@ -12,10 +12,10 @@ export type EventPhase =
 
 export const PHASES: { id: EventPhase; label: string; teamMessage: string }[] = [
   { id: "waiting", label: "Waiting", teamMessage: "The case opens soon. Stay logged in." },
-  { id: "investigation", label: "Investigation", teamMessage: "Analyse the evidence, build your timeline, submit your initial conclusion." },
-  { id: "initial_locked", label: "Initial locked", teamMessage: "Initial answers are locked. Stand by for new evidence." },
-  { id: "twist", label: "Twist", teamMessage: "New evidence released. Reassess and revise your timeline." },
-  { id: "final", label: "Final report", teamMessage: "Submit your final case report before the timer ends." },
+  { id: "investigation", label: "Investigation", teamMessage: "Read and tag the evidence, build your timeline and submit your Initial Conclusion. You can keep investigating until the lock." },
+  { id: "initial_locked", label: "Initial locked", teamMessage: "Round 1 is locked. Stand by for new evidence." },
+  { id: "twist", label: "Twist", teamMessage: "New evidence released. Review it, update your timeline, then submit your Final Report." },
+  { id: "final", label: "Final report", teamMessage: "Submit your Final Report before the timer ends." },
   { id: "closed", label: "Closed", teamMessage: "Submissions are closed. Judging in progress." },
   { id: "presentations", label: "Presentations", teamMessage: "Shortlisted teams are presenting." },
   { id: "results", label: "Results", teamMessage: "Results are out." },

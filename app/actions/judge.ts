@@ -26,7 +26,7 @@ export async function saveJudgeScores(formData: FormData) {
     if (!rows.length) throw new UserError("Enter at least one score.");
     const { error } = await supabase.from("judge_scores").upsert(rows);
     if (error) {
-      throw new UserError(/row-level security/i.test(error.message) ? "Not saved: you are not assigned to this team (or presentation scores are for shortlisted teams only)." : error.message);
+      throw new UserError(/row-level security/i.test(error.message) ? "Not saved: you are not assigned to this team, scoring is closed in this phase, or presentation scores are for shortlisted teams only." : error.message);
     }
     revalidatePath("/judge", "layout");
     return `Saved ${rows.length} score(s).`;

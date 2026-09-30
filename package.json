@@ -11,7 +11,10 @@
     "test:scoring": "tsx scripts/test-scoring.ts",
     "lint": "eslint .",
     "validate:cases": "tsx scripts/validate-cases.ts",
-    "test": "npm run test:scoring && npm run validate:cases"
+    "test": "npm run test:scoring && npm run test:rules && npm run validate:cases && npm run audit:cases",
+    "test:rules": "tsx scripts/test-rules.ts",
+    "audit:cases": "tsx scripts/audit-cases.ts",
+    "verify:prod": "tsx scripts/verify-production.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

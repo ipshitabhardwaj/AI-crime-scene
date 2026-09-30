@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { phaseInfo } from "@/lib/constants";
+import { PHASES, phaseInfo } from "@/lib/constants";
 import type { EventRow } from "@/lib/types";
 import { formatMs, useCountdown, useEvent } from "./useEvent";
 
@@ -48,17 +48,36 @@ export default function ScreenView({ initial, board }: { initial: EventRow | nul
           </>
         ) : (
           <>
-            <h1 className={`text-6xl font-black md:text-8xl ${phase === "twist" ? "animate-pulse text-danger" : ""}`}>
+            {phase === "twist" && <p className="stamp text-2xl text-danger">Case update</p>}
+            <h1 className={`text-6xl font-black tracking-tight md:text-8xl ${phase === "twist" ? "animate-pulse text-danger" : ""}`}>
               {phase === "twist" ? "NEW EVIDENCE RELEASED" : info.label}
             </h1>
             <p className="max-w-3xl text-xl text-muted md:text-2xl">{info.teamMessage}</p>
             {left !== null && (
-              <p className={`font-mono text-7xl font-bold tabular-nums md:text-9xl ${left < 5 * 60_000 ? "text-danger" : ""}`}>{formatMs(left)}</p>
+              <div className="mt-4">
+                <p className="font-mono text-sm uppercase tracking-[0.4em] text-muted">{left === 0 ? "" : "Time left"}</p>
+                <p suppressHydrationWarning className={`font-mono text-8xl font-bold tabular-nums md:text-[10rem] ${left < 5 * 60_000 ? "text-danger" : ""}`}>
+                  {left === 0 ? "TIME UP" : formatMs(left)}
+                </p>
+              </div>
             )}
           </>
         )}
       </div>
-      <p className="pb-6 text-center font-mono text-sm text-muted">Observe → Analyse → Connect → Investigate → Decode</p>
+      <ol className="mx-auto flex flex-wrap justify-center gap-2 px-6 pb-6" aria-label="Event phases">
+        {PHASES.slice(1).map((p, i) => {
+          const cur = PHASES.findIndex((x) => x.id === phase);
+          const st = i + 1 < cur ? "done" : i + 1 === cur ? "now" : "todo";
+          return (
+            <li
+              key={p.id}
+              className={`rounded-full border px-4 py-1.5 font-mono text-sm ${st === "now" ? "border-accent bg-accent text-ink" : st === "done" ? "border-line text-muted line-through" : "border-line text-muted"}`}
+            >
+              {p.label}
+            </li>
+          );
+        })}
+      </ol>
       <div className="tape h-4 w-full" />
     </main>
   );

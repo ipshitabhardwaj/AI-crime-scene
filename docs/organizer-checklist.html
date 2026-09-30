@@ -35,7 +35,7 @@
     <li>Projector on <b>/screen</b>, full screen, shows "Waiting".</li>
     <li>Check-in desk: Teams page open, slips sorted by code; blank slips for walk-ins.</li>
     <li>Walk-in: Teams → Add one team → write down code + PIN.</li>
-    <li>Judges have their logins and a printed SOLUTIONS copy each.</li>
+    <li>Judges have their logins (answer keys open for them only at CLOSE).</li>
   </ul>
 </section>
 <section>
@@ -43,7 +43,7 @@
   <ul>
     <li>Teams log in (<b>staggered</b> as they check in). Control room: teams shown red = no login / no case.</li>
     <li>Brief: one person edits the timeline, one the report; show "What do these mean?" tag rules.</li>
-    <li class="warn">Tell teams: <b>do NOT press Log out</b> (it logs out all their devices).</li>
+    <li>Tell teams: <b>commit an initial hypothesis before the lock</b> — it can’t be changed, but they keep tagging &amp; building the timeline until the lock.</li>
     <li>Tell teams: saving is automatic; "No connection" = keep the tab open.</li>
   </ul>
 </section>
@@ -64,14 +64,14 @@
   <h2>INVESTIGATION</h2>
   <ul>
     <li>+15 min: every team shows tags &gt; 0 and recent "Last activity". Visit silent teams.</li>
-    <li>Lost time for one team → <b>+5</b> on its row (note: also applies to later phases).</li>
+    <li>Lost time for one team → <b>this phase +5</b> on its row (only this phase). <b>whole event +5</b> only if it should apply to every phase.</li>
     <li>Everyone short of time → <b>Extend deadline</b>.</li>
   </ul>
 </section>
 <section>
   <h2>LOCK</h2>
   <ul>
-    <li>Timer at 0 → saving already stopped. <b>2 · Lock initial answers</b> + tick "I'm sure". Drafts become "auto-locked" (still scored).</li>
+    <li>Timer at 0 → saving already stopped. <b>2 · Lock initial stage</b> + tick "I'm sure". Hypotheses, tags, timelines locked; drafts "auto-locked" (still scored).</li>
   </ul>
 </section>
 <section>
@@ -84,13 +84,13 @@
 <section>
   <h2>FINAL SUBMISSION</h2>
   <ul>
-    <li><b>4 · Final report</b>, <span class="fill"></span> min (announce). Remind: press <b>Submit</b>, then look for the green "Submitted at".</li>
+    <li>Optional <b>4 · Final report</b>, <span class="fill"></span> min. Remind: press <b>Submit</b>, then look for the green "Submitted at".</li>
   </ul>
 </section>
 <section>
   <h2>CLOSE</h2>
   <ul>
-    <li><b>5 · Close submissions</b> + "I'm sure". Note the "Final submitted" count: <span class="fill"></span></li>
+    <li><b>5 · Close submissions</b> + "I'm sure". "Final submitted" count: <span class="fill"></span> · hand SOLUTIONS to judges.</li>
   </ul>
 </section>
 <section>
@@ -110,7 +110,7 @@
 <section>
   <h2>SHORTLIST</h2>
   <ul>
-    <li>Results → <b>Create shortlist</b> (top <span class="fill" style="min-width:8mm"></span>) only after judging is done.</li>
+    <li>Judging Y/Y → Results → <b>Create shortlist</b> (top <span class="fill" style="min-width:8mm"></span>).</li>
     <li><b>6 · Presentations</b>. Projector shows the order. Judges score "Report &amp; presentation".</li>
   </ul>
 </section>
@@ -118,7 +118,7 @@
   <h2>REVEAL</h2>
   <ul>
     <li>All presentation scores in. <b>Export CSV</b> (backup #2).</li>
-    <li><b>7 · Reveal results</b> + "I'm sure". Projector: 10th → 1st.</li>
+    <li><b>7 · Reveal results</b> + "I'm sure". Projector: 10th → 1st. Judge scores freeze.</li>
   </ul>
 </section>
 <section>
@@ -132,12 +132,12 @@
 <section class="warn">
   <h2>IF SOMETHING GOES WRONG</h2>
   <table>
-    <tr><td>Login fails</td><td>"Wrong code or PIN" → check the slip (AIF-0XX, 6 digits). "Too many attempts" → Teams → More → <b>Reset PIN</b>. "Login server is busy" → wait 30 s; stagger logins; owner raises the Supabase rate limit.</td></tr>
-    <tr><td>Team's data isn't saving</td><td>Look at their save indicator. "No connection" → Wi-Fi, keep the tab open. "Teammate changed this" → copy text, click <i>load the latest version</i>, one editor only. "Time up / closed" → deadline passed or already submitted → <b>+5</b> or <b>unlock</b> if fair. Control room shows their Last activity.</td></tr>
+    <tr><td>Login fails</td><td>"Wrong code or PIN" → check the slip (AIF-0XX, 6 digits). "Too many attempts" → Teams → More → <b>Reset PIN</b>. "Login server is busy" → wait 30 s; one device at a time; owner raises the Supabase rate limit. Pressed "Log out" → only that laptop; log in again.</td></tr>
+    <tr><td>Team's data isn't saving</td><td>Look at their save indicator. "No connection" → Wi-Fi, keep the tab open. "Teammate changed this" → copy text, click <i>load the latest version</i>, one editor only. "Time up / locked" → <b>this phase +5</b> or <b>unlock</b> if fair. Control room shows their Last activity.</td></tr>
     <tr><td>Wi-Fi drops (room)</td><td>Pause the clock: <b>Extend deadline</b> by the outage. Edits are kept in open tabs and save on reconnect. Long outage → paper forms + printed case copies.</td></tr>
     <tr><td>Submission fails</td><td>"Couldn't confirm" → press Submit again (safe, never duplicates). Check the Report page for green "Submitted at", or the Control room status. Unsubmitted work is auto-locked and still scored.</td></tr>
-    <tr><td>Admin clicked something by mistake</td><td><b>STOP, don't click more.</b> Wrong timer → <i>Change timer</i>. Submitted by mistake → <i>unlock</i> (only while that phase runs). Wrong phase → going back needs BACK and does not unlock reports; usually better to continue. Never press Reset during the event.</td></tr>
-    <tr><td>Judge can't access a team</td><td>"View only / not assigned" → Results → <b>Assign judges</b> again (scores are kept) or check the judge is in the top-N list. Presentation box missing → the team isn't shortlisted. Judge can't log in → check email/password (admin can reset it in Supabase); meanwhile note scores on paper.</td></tr>
+    <tr><td>Admin clicked something by mistake</td><td><b>STOP, don't click more.</b> Wrong timer → <i>Change timer</i>. Submitted by mistake → <i>unlock</i> (only while that phase runs). Only the next step or one step back exists; back needs BACK and never unlocks work — usually continue. Never press Reset during the event.</td></tr>
+    <tr><td>Judge can't access a team</td><td>Before CLOSE judges see nothing (by design). After: Results → <b>Assign judges</b> again (scores kept) or check the team is in the top N. Presentation box missing → the team isn't shortlisted. Judge can't log in → check email/password (admin can reset it in Supabase); meanwhile note scores on paper.</td></tr>
   </table>
 </section>
 </div>

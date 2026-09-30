@@ -6,13 +6,14 @@
  * twist items (T.. codes, is_twist), share of misleading/irrelevant items,
  * a gap-free timeline of relevant, time-stamped items, answer categories in
  * the option list, pre- vs post-twist answers differ, no evidence text that
- * spells out the answer category, safe screenshot URLs, and that a perfect
- * team scores exactly the maximum. Across cases: identical option lists and
+ * spells out the answer category, safe screenshot URLs, a definition for every
+ * root-cause option, and that a perfect team scores exactly the maximum. Across cases: identical option lists and
  * unique case codes. Exits with code 1 on any failure.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CaseFileSchema, type CaseFile } from "../lib/cases/schema";
+import { ROOT_CAUSE_HELP } from "../lib/root-causes";
 import { MAX_AUTO, scoreAuto } from "../lib/scoring";
 
 const dir = join(process.cwd(), "cases");
@@ -73,14 +74,17 @@ for (const file of files) {
   const text = JSON.stringify(ev.map((e) => [e.title, e.content])).toLowerCase();
   if (text.includes(c.answer.post_twist_category.toLowerCase())) fail(file, `evidence spells out the answer category “${c.answer.post_twist_category}”`);
 
-  const key = ev.map((e) => ({ id: e.code, tag: e.key.tag, timeline_pos: e.key.timeline_pos }));
+  for (const o of c.root_cause_options) if (!ROOT_CAUSE_HELP[o]) fail(file, `root cause option “${o}” has no definition in lib/root-causes.ts`);
+
+  const key = ev.map((e) => ({ id: e.code, tag: e.key.tag, timeline_pos: e.key.timeline_pos, twist: e.is_twist }));
   const perfect = scoreAuto({
     key,
     postTwistCategory: c.answer.post_twist_category,
     teamTags: Object.fromEntries(key.map((k) => [k.id, k.tag])),
     teamTimeline: timeline.map((e) => e.code),
-    initialCategory: c.answer.root_cause_category,
+    initialCategory: c.answer.post_twist_category,
     finalCategory: c.answer.post_twist_category,
+    citedEvidence: key.filter((k) => k.tag === "relevant" && !k.twist).map((k) => k.id),
   });
   if (perfect.total !== MAX_AUTO) fail(file, `a perfect team scores ${perfect.total}, expected ${MAX_AUTO}`);
 

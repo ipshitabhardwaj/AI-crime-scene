@@ -40,6 +40,18 @@ export async function saveTag(evidenceId: string, tag: EvidenceTag | null, note:
   return error ? fail(error.message) : { ok: true };
 }
 
+/**
+ * Read this team's current tag for one item (row security limits it to the
+ * team's own rows). Used to show a teammate's change on another device.
+ * Returns null when it could not be read.
+ */
+export async function readTag(evidenceId: string): Promise<{ tag: EvidenceTag | null; note: string } | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("evidence_tags").select("tag, note").eq("evidence_id", evidenceId).maybeSingle<{ tag: EvidenceTag | null; note: string }>();
+  if (error) return null;
+  return { tag: data?.tag ?? null, note: data?.note ?? "" };
+}
+
 export async function saveTimeline(stage: Stage, entries: TimelineEntry[], baseVersion: number): Promise<ActionResult> {
   if (!Array.isArray(entries) || entries.length > 60) return { ok: false, ...MESSAGES.INVALID_TIMELINE };
   const supabase = await createClient();

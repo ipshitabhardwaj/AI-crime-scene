@@ -54,10 +54,8 @@ export default function TimelineBuilder({
 
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-muted">
-          Put the events in the order they happened. Link each step to the evidence that proves it.
-        </p>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <p className="text-sm text-muted">Earliest event first. Pick the evidence for each step; its time fills in automatically.</p>
         <SaveIndicator state={state} error={error} />
       </div>
       {state === "conflict" && (
@@ -70,8 +68,8 @@ export default function TimelineBuilder({
         {entries.map((e, i) => {
           const ev = e.evidence_id ? byId.get(e.evidence_id) : undefined;
           return (
-            <li key={i} className="relative rounded-xl border border-line bg-panel p-3">
-              <span className="absolute -left-[35px] top-4 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-ink">
+            <li key={i} className={`relative rounded-xl border bg-panel p-3 ${ev ? "border-line" : "border-dashed border-line"}`}>
+              <span className="absolute -left-[37px] top-3.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-accent font-mono text-xs font-bold text-ink">
                 {i + 1}
               </span>
               <div className="grid gap-2 md:grid-cols-[140px_1fr_1.4fr_auto]">
@@ -118,19 +116,30 @@ export default function TimelineBuilder({
                   </div>
                 )}
               </div>
-              {ev && <p className="mt-1 font-mono text-xs text-muted">Evidence {ev.code}{ev.time_label ? ` · ${ev.time_label}` : ""}</p>}
+              {ev ? (
+                <p className="mt-1.5 text-xs text-muted">
+                  <span className="font-mono text-accent">{ev.code}</span> {ev.title}
+                  {ev.time_label ? <span className="font-mono"> · {ev.time_label}</span> : null}
+                </p>
+              ) : (
+                <p className="mt-1.5 text-xs text-muted">No evidence linked — this step won’t count towards your score.</p>
+              )}
             </li>
           );
         })}
       </ol>
 
-      {entries.length === 0 && <p className="rounded-xl border border-dashed border-line p-6 text-center text-muted">No steps yet.</p>}
+      {entries.length === 0 && (
+        <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">
+          No steps yet. {writable ? "Add the first thing that happened." : ""}
+        </p>
+      )}
 
       {writable && entries.length < 60 && (
         <button
           type="button"
           onClick={() => setEntries((l) => [...l, newEntry()])}
-          className="mt-4 rounded-md border border-accent px-4 py-2 text-sm font-medium text-accent hover:bg-accent/10"
+          className="mt-4 w-full rounded-lg border border-dashed border-accent/70 px-4 py-2.5 text-sm font-semibold text-accent hover:bg-accent/10"
         >
           + Add step
         </button>
