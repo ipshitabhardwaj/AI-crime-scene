@@ -177,7 +177,7 @@ export function ConflictBanner({ onReload }: { onReload: () => void }) {
       <button type="button" onClick={onReload} className="font-semibold underline">
         load the latest version
       </button>
-      . Tip: let one person edit the timeline and one the report.
+      . Tip: let one person write the report.
     </div>
   );
 }

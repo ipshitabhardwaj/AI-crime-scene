@@ -3,17 +3,13 @@
  *  - phase state machine (allowed/forbidden transitions, guards)
  *  - extra-time rule (phase-only vs whole-event)
  *  - login capacity calculation
- *  - root-cause definitions cover every case option
  * Database-side rules (who may write/read what, when) are tested by
  * supabase/tests/security_checks.sql.
  */
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { capacitySettings, planAuthCapacity } from "../lib/capacity";
 import { PHASES, type EventPhase } from "../lib/constants";
 import { effectiveExtraMinutes, teamDeadline } from "../lib/phase";
-import { ROOT_CAUSE_HELP } from "../lib/root-causes";
 import { TRANSITIONS, checkTransition, findTransition } from "../lib/state-machine";
 
 let passed = 0;
@@ -120,15 +116,6 @@ test("capacity settings: defaults and overrides from env", () => {
     { devicesPerTeam: 2, loginWindowMinutes: 30, configuredLimitPer5Min: 600 },
   );
   assert.equal(capacitySettings({ EVENT_DEVICES_PER_TEAM: "abc" }).devicesPerTeam, 3);
-});
-
-// ---------------------------------------------------------------- root causes
-test("every root-cause option in every case has a definition", () => {
-  const dir = join(process.cwd(), "cases");
-  for (const f of readdirSync(dir).filter((x) => x.endsWith(".json"))) {
-    const c = JSON.parse(readFileSync(join(dir, f), "utf8")) as { root_cause_options: string[] };
-    for (const o of c.root_cause_options) assert.ok(ROOT_CAUSE_HELP[o], `${f}: no definition for “${o}”`);
-  }
 });
 
 console.log(`rule tests passed (${passed} tests)`);

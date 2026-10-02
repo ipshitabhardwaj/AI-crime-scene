@@ -47,7 +47,7 @@ export default function HelpDialog({ label, title, storageKey, children }: { lab
             </button>
           </div>
           <div className="space-y-4 text-sm leading-relaxed">{children}</div>
-          <button type="button" onClick={() => ref.current?.close()} className="mt-6 w-full rounded-lg bg-accent py-2.5 font-semibold text-ink hover:brightness-110">
+          <button type="button" onClick={() => ref.current?.close()} className="mt-6 w-full rounded-lg bg-accent py-2.5 font-semibold text-white hover:brightness-110">
             Got it
           </button>
         </div>
@@ -62,7 +62,7 @@ export function HelpSteps({ steps }: { steps: [string, string][] }) {
     <ol className="space-y-3">
       {steps.map(([t, d], i) => (
         <li key={t} className="flex gap-3">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent font-mono text-xs font-bold text-ink">{i + 1}</span>
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent font-mono text-xs font-bold text-white">{i + 1}</span>
           <span>
             <b>{t}</b>
             <span className="block text-muted">{d}</span>

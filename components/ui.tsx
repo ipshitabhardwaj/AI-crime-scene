@@ -136,7 +136,7 @@ function StepperFull({ steps, label }: { steps: Step[]; label: string }) {
         >
           <span
             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold ${
-              s.state === "done" ? "bg-ok text-ink" : s.state === "current" ? "bg-accent text-ink" : "border border-line text-muted"
+              s.state === "done" ? "bg-ok text-ink" : s.state === "current" ? "bg-accent text-white" : "border border-line text-muted"
             }`}
           >
             {s.state === "done" ? "✓" : i + 1}
@@ -176,7 +176,7 @@ export function NextAction({
         {body && <p className="mt-1 text-sm text-muted">{body}</p>}
       </div>
       {href && cta && (
-        <Link prefetch={false} href={href} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-accent px-5 py-2.5 font-semibold text-ink hover:brightness-110">
+        <Link prefetch={false} href={href} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-accent px-5 py-2.5 font-semibold text-white hover:brightness-110">
           {cta} →
         </Link>
       )}

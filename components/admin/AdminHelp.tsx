@@ -11,7 +11,7 @@ export default function AdminHelp() {
           ["Cases", "Upload the 4 case files and delete the sample case."],
           ["Teams", "Import the registration CSV, print the login slips, and check teams in at the desk."],
           ["Control room (during the event)", "Press the big Go button when it is time for the next step. There is only ever one next step. Put the Projector page on the big screen."],
-          ["Live status", "See every team: logged in, tagging, submitted. Give one team extra time or unlock a submission here."],
+          ["Live status", "See every team: logged in, questions answered, submitted. Give one team extra time or unlock a submission here."],
           ["Results (after Close)", "Auto-score, assign judges, create the shortlist, then reveal. Export the CSV."],
         ]}
       />

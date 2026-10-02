@@ -1,60 +1,55 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { selectAll } from "@/lib/db";
-import { judgePoints, scoreAuto, selectScoredAnswers, type KeyEvidence, type Tag } from "@/lib/scoring";
+import { judgePoints, letterToChoice, scoreAuto, type KeyQuestion, type TeamAnswer } from "@/lib/scoring";
 
-type EvidenceKeyRow = { id: string; code: string; case_id: string; is_twist: boolean; answer_evidence: { tag: Tag; timeline_pos: number | null } | null };
+type QuestionKeyRow = { id: string; code: string; case_id: string; is_twist: boolean; answer_evidence: { timeline_pos: number | null } | null };
 
 /** Compute and store auto_scores for every team that has a case. Returns count. */
 export async function computeAutoScores(db: SupabaseClient): Promise<number> {
   // Every read pages through all rows: the API caps responses at 1,000 rows.
-  const [teams, ev, answers, subs, tags, tl] = await Promise.all([
+  const [{ data: event }, teams, ev, answers, subs, tags] = await Promise.all([
+    db.from("event").select("twist_released_at").eq("id", 1).maybeSingle<{ twist_released_at: string | null }>(),
     selectAll<{ id: string; case_id: string | null }>((a, b) => db.from("teams").select("id, case_id").not("case_id", "is", null).order("id").range(a, b)),
-    selectAll<EvidenceKeyRow>((a, b) => db.from("evidence").select("id, code, case_id, is_twist, answer_evidence(tag, timeline_pos)").order("id").range(a, b)),
+    selectAll<QuestionKeyRow>((a, b) => db.from("evidence").select("id, code, case_id, is_twist, answer_evidence(timeline_pos)").order("id").range(a, b)),
     selectAll<{ case_id: string; post_twist_category: string }>((a, b) => db.from("answer_key").select("case_id, post_twist_category").order("case_id").range(a, b)),
-    selectAll<{ team_id: string; stage: string; root_cause_category: string | null; key_evidence: string[] | null; tags_snapshot: Record<string, Tag> | null }>((a, b) =>
-      db.from("submissions").select("team_id, stage, root_cause_category, key_evidence, tags_snapshot").order("team_id").order("stage").range(a, b),
+    selectAll<{ team_id: string; stage: string; root_cause_category: string | null }>((a, b) =>
+      db.from("submissions").select("team_id, stage, root_cause_category").order("team_id").order("stage").range(a, b),
     ),
-    selectAll<{ team_id: string; evidence_id: string; tag: Tag | null }>((a, b) =>
-      db.from("evidence_tags").select("team_id, evidence_id, tag").order("team_id").order("evidence_id").range(a, b),
-    ),
-    selectAll<{ team_id: string; stage: string; position: number; evidence_id: string | null }>((a, b) =>
-      db.from("timeline_entries").select("team_id, stage, position, evidence_id").order("team_id").order("stage").order("position").range(a, b),
+    selectAll<{ team_id: string; evidence_id: string; note: string; updated_at: string }>((a, b) =>
+      db.from("evidence_tags").select("team_id, evidence_id, note, updated_at").order("team_id").order("evidence_id").range(a, b),
     ),
   ]);
 
   const codeOf = new Map(ev.map((e) => [e.id, e.code]));
-  const keyByCase = new Map<string, KeyEvidence[]>();
-  for (const e of ev ?? []) {
-    if (!e.answer_evidence) continue;
+  const keyByCase = new Map<string, KeyQuestion[]>();
+  for (const e of ev) {
+    if (!e.answer_evidence?.timeline_pos) continue;
     const list = keyByCase.get(e.case_id) ?? [];
-    list.push({ id: e.code, tag: e.answer_evidence.tag, timeline_pos: e.answer_evidence.timeline_pos, twist: e.is_twist });
+    list.push({ code: e.code, answer: e.answer_evidence.timeline_pos, twist: e.is_twist });
     keyByCase.set(e.case_id, list);
   }
-  const postTwist = new Map(answers.map((a) => [a.case_id, a.post_twist_category as string]));
+  const culprit = new Map(answers.map((a) => [a.case_id, a.post_twist_category]));
+  const tagsByTeam = new Map<string, typeof tags>();
+  for (const t of tags) {
+    const list = tagsByTeam.get(t.team_id) ?? [];
+    list.push(t);
+    tagsByTeam.set(t.team_id, list);
+  }
 
   const rows = teams.map((t) => {
     const initial = subs.find((s) => s.team_id === t.id && s.stage === "initial");
     const final = subs.find((s) => s.team_id === t.id && s.stage === "final");
-
-    const liveTags: Record<string, Tag | null> = {};
-    for (const x of tags.filter((x) => x.team_id === t.id)) liveTags[codeOf.get(x.evidence_id) ?? ""] = x.tag;
-    const entries = tl.filter((x) => x.team_id === t.id);
-    const codes = (stage: string) => entries.filter((x) => x.stage === stage).map((x) => (x.evidence_id ? (codeOf.get(x.evidence_id) ?? null) : null));
+    const teamAnswers: Record<string, TeamAnswer> = {};
+    for (const x of tagsByTeam.get(t.id) ?? []) teamAnswers[codeOf.get(x.evidence_id) ?? ""] = { choice: letterToChoice(x.note), updatedAt: x.updated_at };
 
     const s = scoreAuto({
       key: keyByCase.get(t.case_id!) ?? [],
-      postTwistCategory: postTwist.get(t.case_id!) ?? "",
-      ...selectScoredAnswers({
-        initialCategory: initial?.root_cause_category,
-        finalCategory: final?.root_cause_category,
-        finalTagsSnapshot: final?.tags_snapshot ?? null,
-        liveTags,
-        finalTimeline: codes("final"),
-        initialTimeline: codes("initial"),
-        initialCited: initial?.key_evidence ?? [],
-        finalCited: final?.key_evidence ?? [],
-      }),
+      culprit: culprit.get(t.case_id!) ?? "",
+      answers: teamAnswers,
+      twistReleasedAt: event?.twist_released_at ?? null,
+      initialCulprit: initial?.root_cause_category,
+      finalCulprit: final?.root_cause_category,
     });
     return {
       team_id: t.id,
@@ -62,7 +57,7 @@ export async function computeAutoScores(db: SupabaseClient): Promise<number> {
       timeline: s.timeline,
       hypothesis: s.hypothesis,
       root_cause: s.root_cause,
-      evidence_support: s.evidence_support,
+      evidence_support: 0,
       computed_at: new Date().toISOString(),
     };
   });

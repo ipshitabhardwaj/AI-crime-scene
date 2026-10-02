@@ -13,10 +13,10 @@ import { ui } from "@/lib/ui";
 export const dynamic = "force-dynamic";
 
 const STEPS: { phase: EventPhase; title: string; detail: string; minutes?: number }[] = [
-  { phase: "investigation", title: "1 · Start investigation", detail: "Opens every team's case. Teams read and tag evidence, build a timeline and submit an Initial Conclusion.", minutes: 75 },
-  { phase: "initial_locked", title: "2 · Lock initial stage", detail: "Ends round 1. Locks every team's Initial Conclusion, tags and timeline (unsubmitted drafts are locked as they are)." },
-  { phase: "twist", title: "3 · Release the twist", detail: "Shows the new evidence to every team. Teams can update their timeline and write the final report.", minutes: 20 },
-  { phase: "final", title: "4 · Final report (optional)", detail: "Same as the twist phase with a new timer. You can skip it and go straight to Close.", minutes: 20 },
+  { phase: "investigation", title: "1 · Start investigation", detail: "Opens every team's case. Teams read the story, answer the questions and submit an Initial Conclusion.", minutes: 25 },
+  { phase: "initial_locked", title: "2 · Lock initial stage", detail: "Ends round 1. Locks every team's answers and Initial Conclusion (unsubmitted drafts are locked as they are)." },
+  { phase: "twist", title: "3 · Release the twist", detail: "Shows the new evidence and the new questions to every team. Teams then write the Final Report.", minutes: 10 },
+  { phase: "final", title: "4 · Final report (optional)", detail: "Same as the twist phase with a new timer. You can skip it and go straight to Close.", minutes: 10 },
   { phase: "closed", title: "5 · Close submissions", detail: "Ends the investigation. Locks every final report. Then go to Results." },
   { phase: "presentations", title: "6 · Presentations", detail: "The projector shows the shortlisted teams in order. (Create the shortlist on Results first.)" },
   { phase: "results", title: "7 · Reveal results", detail: "The projector reveals the top 10. Judges can no longer change scores." },
@@ -28,7 +28,7 @@ const DURING: Record<EventPhase, string> = {
   waiting: "Check teams in at the desk. When everyone is seated and logged in, start the investigation.",
   investigation: "Teams are investigating. Watch Live status for teams that need help. When the timer ends, lock the initial stage.",
   initial_locked: "Round 1 is locked. Announce the twist, then release it.",
-  twist: "Teams are reviewing the new evidence and writing final reports. When time is up, close submissions.",
+  twist: "Teams are answering the new questions and writing Final Reports. When time is up, close submissions.",
   final: "Teams are finishing their final reports. When time is up, close submissions.",
   closed: "Submissions are closed. Go to Results: auto-score, assign judges, then shortlist.",
   presentations: "Shortlisted teams are presenting. Judges enter presentation scores. Then reveal the results.",
@@ -107,7 +107,7 @@ export default async function ControlPage() {
                     <input type="checkbox" name="confirm" className="h-5 w-5 accent-[var(--color-accent)]" /> I’m sure
                   </label>
                 )}
-                <button className={`${i === 0 ? "px-10 py-3 text-lg" : "px-6 py-2"} ml-auto rounded-lg bg-accent font-bold text-ink hover:brightness-110`}>Go</button>
+                <button className={`${i === 0 ? "px-10 py-3 text-lg" : "px-6 py-2"} ml-auto rounded-lg bg-accent font-bold text-white hover:brightness-110`}>Go</button>
               </div>
             </form>
           );

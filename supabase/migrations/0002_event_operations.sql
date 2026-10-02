@@ -71,14 +71,14 @@ end $$;
 create or replace function public.admin_reset_event() returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  delete from public.shortlist;
-  delete from public.judge_scores;
-  delete from public.judge_assignments;
-  delete from public.auto_scores;
-  delete from public.submissions;
-  delete from public.timeline_entries;
-  delete from public.evidence_tags;
-  update public.teams set extra_minutes = 0;
+  delete from public.shortlist where true;
+  delete from public.judge_scores where true;
+  delete from public.judge_assignments where true;
+  delete from public.auto_scores where true;
+  delete from public.submissions where true;
+  delete from public.timeline_entries where true;
+  delete from public.evidence_tags where true;
+  update public.teams set extra_minutes = 0 where true;
   update public.event
      set phase = 'waiting', phase_ends_at = null, twist_released_at = null, updated_at = now()
    where id = 1;

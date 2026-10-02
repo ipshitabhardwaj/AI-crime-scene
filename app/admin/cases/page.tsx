@@ -29,10 +29,10 @@ export default async function CasesPage() {
       <section className="grid gap-3 md:grid-cols-2">
         {cases.map((c) => (
           <div key={c.id} className={ui.card}>
-            <p className="flex items-center gap-2 font-mono text-xs text-accent">{c.code}{c.code.includes("SAMPLE") && <span className="rounded bg-danger px-1.5 font-sans text-[10px] font-bold text-white">TEST</span>}</p>
+            <p className="flex items-center gap-2 font-mono text-xs text-accent">{c.code}{c.code.includes("SAMPLE") && <span className="rounded bg-danger px-1.5 font-sans text-[10px] font-bold text-ink">TEST</span>}</p>
             <p className="mt-1 font-semibold">{c.title}</p>
             {c.code.includes("SAMPLE") && <p className="mt-1 text-xs text-danger">Test case: delete before importing real teams.</p>}
-            <p className="mt-1 text-sm text-muted">{c.evidence[0]?.count ?? 0} evidence items · {c.teams[0]?.count ?? 0} teams assigned</p>
+            <p className="mt-1 text-sm text-muted">{c.evidence[0]?.count ?? 0} questions · {c.teams[0]?.count ?? 0} teams assigned</p>
             <div className="mt-3 flex items-center gap-2">
               <Link href={`/admin/cases/${c.id}`} className={ui.btnGhost}>Preview + answer key</Link>
               {waiting ? (

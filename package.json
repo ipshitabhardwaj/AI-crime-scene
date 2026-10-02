@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "reset": "tsx --env-file=.env.local scripts/reset-event.ts",
     "test:scoring": "tsx scripts/test-scoring.ts",
     "lint": "eslint .",
     "validate:cases": "tsx scripts/validate-cases.ts",

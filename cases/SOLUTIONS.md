@@ -1,107 +1,130 @@
 # The AI Files — case solutions (ORGANISERS ONLY)
 
-Do not share this file or the `cases/` folder with participants. The same answer keys are visible to admins and judges inside the app (Cases → Preview + answer key, and on each judge page).
+Do not share this file or the `cases/` folder with participants. The same answers are visible to admins (Cases → open a case) and to judges after Close.
 
-All four cases share one root-cause list, so the dropdown never hints at the answer. Each case has a "trap": the obvious conclusion before the twist. Careful teams can find the real answer **before** the twist from clues already on the board; the twist confirms it for everyone else. Automatic scoring (docs/SCORING.md) gives 6 points for already having the real category in the initial hypothesis, 8 for the final category, and 6 for citing pre-twist evidence that proves it — so the twist confirms the answer but copying it earns little.
+Each case is a short story with three suspects, 8 multiple-choice questions (one clue each) and, after the twist, 3 more questions. The story points at one suspect first; the clues show it was someone else. Careful teams can work out the real culprit before the twist; the twist confirms it for everyone.
 
-Definitions of the 10 categories are shown to teams next to the dropdown (lib/root-causes.ts). The key's timeline counts only the incident chain: relevant events outside it are neutral, misleading/irrelevant events in a timeline cost 2 points each.
+Automatic score (50): round-1 questions 24 (3 each) · twist questions 12 (4 each) · Initial Conclusion names the real culprit 6 · Final Report names the real culprit 8. No negative marking. Judges add 50. Details: `docs/SCORING.md`.
 
-| Case | Theme | Trap (before twist) | Real root cause (scored) |
+| Case | Title | Story points to | Really did it |
 | --- | --- | --- | --- |
-| A | The 2:17 AM Incident | Compromised credentials / external attacker | Human error during an approved change |
-| B | The AI That Lied | AI model or prompt error | Bad or wrongly formatted input data |
-| C | The Vanishing Data | Deliberate insider action | Buggy code release |
-| D | The Fake Signal | Hardware failure | Test or staging activity hitting production |
-
-All evidence is written in plain language (activity records, chats, emails, tables, documents, AI outputs): no code or technical logs, so non-CS teams can play. Each case has 17–18 evidence items, a third or more of them misleading or irrelevant, and 1–2 twist items (T01, T02). Sized for a 60–75 minute investigation with 2–4 people. `npm run validate:cases` checks all of this automatically.
-
-**Tag rule shown to teams** (so the key is predictable): *Relevant* = part of what actually happened, or needed to prove it, even if it looked suspicious at first. *Misleading* = points toward a wrong explanation and is not part of the real cause. *Irrelevant* = unrelated noise. Items on the boundary between misleading and irrelevant cost at most ~0.8 of 50 points.
+| A | The Locked Room | Daniel Rathore (nephew and heir) | **Sarah Menon (business partner)** |
+| B | The Leaked Question Paper | Rohan Verma (teaching assistant) | **Gopal Bhatia (department clerk)** |
+| C | The Museum Heist | Joseph Pinto (night guard) | **Rekha Bhandari (jewellery designer)** |
+| D | The Missing Person | Dev Malhotra (stage manager, her ex) | **Kavya Nair (understudy)** |
 
 ---
 
-## CASE-A · The 2:17 AM Incident (Finvera Payments)
+## CASE-A · The Locked Room
 
-**What really happened.** On-call engineer Karthik, working from home on a replacement laptop, carried out approved change CHG-4471: a nightly "we miss you" SMS reminder. He gave the reminder program permission to read customer details, scheduled it for 02:17 on the message server, and planned to add the NOTIFY_TEMPLATE setting "in the morning", not realising 02:17 was that same night. The program ran without the setting, fell back to its default "account suspended" message and started texting 48,210 inactive customers in batches of 1,000. After ~25,000 SMS the SMS company's hourly limit was hit; the program retried endlessly, its record file filled the disk and the server shut down.
+**Who did it:** Sarah Menon (business partner)
 
-**Correct timeline**
-1. E01 23:42 Karthik signs in from the new laptop (he approved the phone confirmation)
-2. E04 00:03 gives the reminder program permission, reason "CHG-4471"
-3. E05 00:05 schedules the reminder job for 02:17
-4. E07 02:17 program looks up 48,210 inactive customers
-5. E09 02:23 SMS company accepts batch 1 with the "account suspended" message
-6. E10 02:26:13 SMS company refuses batch 26 (hourly limit of 25,000 reached)
-7. E11 02:26–02:31 endless retries fill the disk, server shuts down
+**What happened.** It was murder staged as a burglary and a fall. Vikram had found that Sarah was moving company money and was ending the partnership. She came in at 10:12, had coffee with him (she takes sugar), they argued at about 10:45, and she struck him with the brass owl paperweight at 10:47, when the clock stopped. She wiped the paperweight, opened the window to fake a break-in, locked the door from outside with the spare key, dropped the key in the plant pot and left at 11:02. The dry sill, untouched flower bed and unmarked ladder show the break-in and the fall were fake. Daniel was at the cinema and reached the gate at 11:15. Meera was in the kitchen with the cook.
 
-**Trap:** new laptop + new city (E01), permission given (E04), a job scheduled at night (E05), mass lookup (E07), password-guessing attempts (E06), a bot scan on the firewall (E12), panicked support chat (E02), and an AI summary saying "account takeover" (E13).
+**Common wrong answer:** Daniel Rathore (nephew and heir)
 
-**Clues available before the twist:** LT-7F2 is an IT-issued replacement laptop (E03); Karthik approved the phone confirmation (E01); the permission cites a change number and he is on call (E04); the reminder program's instruction sheet says it defaults to the "account suspended" message if NOTIFY_TEMPLATE is missing (E08); the settings file has no NOTIFY_TEMPLATE (E14); the password guessing was blocked and never succeeded (E06).
+**Round 1**
 
-**Misleading:** E02, E06, E12, E13. **Irrelevant:** E15 datacentre report, E16 certificate renewal.
+- **Q1** (The window) What does this tell us about the “burglar”? → **B** · Nobody came in through this window
+- **Q2** (The ladder) What does the ladder tell us? → **C** · He never climbed it; the fall was staged
+- **Q3** (Wall clock) When was Vikram most likely attacked? → **D** · At about 10:47 PM
+- **Q4** (Paperweight) What is the paperweight most likely to be? → **A** · The weapon, taken from the desk and wiped
+- **Q5** (Coffee cups) What do the cups show? → **C** · A visitor who takes sugar drank with him
+- **Q6** (Phone) Who had the most to lose that night? → **D** · Sarah
+- **Q7** (Cinema ticket) What does the ticket suggest about Daniel? → **B** · He was at the cinema when Vikram was attacked
+- **Q8** (The door) If someone attacked Vikram, how did that person leave a locked room? → **A** · By locking the door from outside with a key
 
-**Good fixes:** no dangerous defaults (refuse to run if the message setting is missing); test run first; checklist done before scheduling; limit retries; keep record files from filling the disk; approve SMS text before bulk sends.
+**Twist.** New evidence has come in: the gate guard's log, Vikram's diary and a second key to the study.
 
----
+- **T1** (Gate log) What does the log show? → **C** · Sarah lied: she was inside for 50 minutes
+- **T2** (Spare key) How was the study locked? → **B** · The killer locked it outside with the spare key
+- **T3** (Diary) What was the motive? → **A** · To stop Vikram exposing the stolen money
 
-## CASE-B · The AI That Lied (Kiranaa Mart)
-
-**What really happened.** A billing-machine update (5.2) installed itself at the nine North trial stores on Sunday 23:00 and switched their sales files to the European number style `91.732,50` (dot for thousands, comma for decimals). The nightly upload removes every comma, so ₹91,732.50 became ₹91.7325: every amount about 1/1000th of reality. A warning fired but nobody watched it. InsightBot faithfully reported the numbers it was given.
-
-**Correct timeline**
-1. T01 Sun 23:00 billing update 5.2 installs at the 9 North stores (twist item)
-2. E08 Mon 01:00 store sales files arrive in the new number style
-3. E07 Mon 02:00 nightly upload reads them; warning about 9 North stores ignored
-4. E09 Mon 06:00:00 InsightBot is given the tiny North totals
-5. E01 Mon 06:00:12 report says North collapsed, recommends closures
-6. E10 Mon 09:10 CEO forwards it to the board
-
-**Trap:** AI upgraded on Friday (E02), "be decisive" instruction added (E03), analysts blaming the AI for making things up (E04), heavy rain in North (E13), a competitor opening nearby (E16).
-
-**Clues available before the twist:** going back to the old AI version and old instructions gave the same numbers (E04); the data given to InsightBot already contains the tiny totals (E09); the AI only copies the totals it is given (E11); an average bill of ₹0.11 (E05); the store file uses commas for decimals (E08); the upload removes every comma (E06); the upload warning names exactly those 9 stores (E07); the store manager says "the billing machines updated themselves on Sunday night" (E12).
-
-**Misleading:** E02, E03, E13, E16. **Irrelevant:** E14 newsletter, E15 salary record, E17 AC repair. (E04 is tagged relevant: it contains the decisive fact that going back changed nothing.)
-
-**Good fixes:** read numbers in the store's own format or reject unclear ones; block uploads with impossible values (₹0.11 bills); never ignore data warnings; check vendor updates; have the AI point out strange drops (−99% in 9 stores) instead of recommending closures.
+**A good report** names the culprit, says how it was done, and points to at least two clues that prove it (and ideally one clue that clears the first suspect).
 
 ---
 
-## CASE-C · The Vanishing Data (ShopSphere)
+## CASE-B · The Leaked Question Paper
 
-**What really happened.** Archiving program version 2.0 (change #812), put live on Tuesday 18:20, renamed its setting RETENTION_DAYS to ARCHIVER_RETENTION_DAYS and made "missing" mean keep 0 days instead of 30. The live settings file still used the old name, so at 03:00 the program kept 0 days: it copied **every** order to long-term storage and removed them from the live system. The departing database manager only looked at and copied data for her handover, with a read-only account. The orders are safe in storage.
+**Who did it:** Gopal Bhatia (department clerk)
 
-**Correct timeline**
-1. E06 Tue 18:20 archiving program v2.0 put live
-2. E09 Wed 03:00:00 nightly run starts with "days to keep: 0"
-3. E12 03:00:03 3,412 orders saved to long-term storage
-4. E02 03:00:04 3,412 orders deleted from the live system
-5. E10 07:15 customers' app shows "no orders"
-6. E11 07:30 support flooded
+**What happened.** Gopal Bhatia, the clerk, came back to Room 204 at 7:40 PM, opened the cupboard with the spare key, photographed the paper and sent it to his son Aman, who has a backlog in the same subject and posted it at 8:05 PM. The red-ink correction proves the photo was taken after 6:30 PM, the cupboard was not forced, and Bhatia's green mug is in the photo. His “I only came for my tiffin” story is false: he stayed 30 minutes and the tiffin was still on his desk next morning. Rohan was in the library from 5:10 to 8:45, and Nisha was with the professor the whole time.
 
-**Trap:** Neha resigned unhappily (E04), asked people not to touch the live system (E05), copied the orders to her laptop at 23:52 (E03), and an AI names her as the suspect (E13).
+**Common wrong answer:** Rohan Verma (teaching assistant)
 
-**Clues available before the twist:** the delete was done by the archiving program, not Neha (E02); "days of orders to keep: 0" in the program's activity (E09); the new version reads ARCHIVER_RETENTION_DAYS (0 if missing) while the settings file has RETENTION_DAYS (E07, E08); Neha's account cannot delete orders (E16); the orders are in storage (E12).
+**Round 1**
 
-**Misleading:** E03, E04, E05, E13. **Irrelevant:** E14 website photos refresh, E15 cafeteria email.
+- **Q1** (The leaked photo) When was the photo taken? → **C** · After 6:30 PM
+- **Q2** (Steel cupboard) How was the cupboard opened? → **B** · With a key
+- **Q3** (Keys) What does this mean? → **D** · Only the professor's key or the clerk's spare fits
+- **Q4** (Library log) What does this tell us about Rohan? → **A** · He was in the library the whole time
+- **Q5** (Professor's statement) What does this tell us about Nisha? → **B** · She was never alone with the paper
+- **Q6** (Mugs) What does the mug tell us? → **C** · The photo was taken in Room 204; the mug is not Rohan's
+- **Q7** (WhatsApp group) What does this suggest? → **D** · Someone with a key gave Aman the photo
+- **Q8** (Timeline) When was the photo most likely taken? → **A** · Between 7:10 PM and 8:05 PM
 
-**Good fixes:** restore from storage; refuse to run when a setting is missing instead of deleting everything; check settings before going live; a safety limit ("never delete more than X% at once"); treat renamed settings as a risky change.
+**Twist.** New evidence has come in: the department visitor register, the clerk's desk, and a remark about the green mug.
+
+- **T1** (Visitor register) What is wrong with Bhatia's story? → **B** · He stayed 30 minutes and never took the tiffin
+- **T2** (Desk drawer) What was the motive? → **A** · To help his son pass the exam
+- **T3** (The green mug) What most likely happened? → **D** · Bhatia used the spare key and sent his son the photo
+
+**A good report** names the culprit, says how it was done, and points to at least two clues that prove it (and ideally one clue that clears the first suspect).
 
 ---
 
-## CASE-D · The Fake Signal (Campus Nexus)
+## CASE-C · The Museum Heist
 
-**What really happened.** The QA team moved its nightly test to a new testing system the evening before. The BROKER_URL setting was not copied, and the replay tool then sends messages to the **live** campus hub. At 03:11 it played back the recording of the 14 August fire drill into the live system. The live hub accepted a device without a password and the fire rule needed only one sensor, so a replayed smoke reading of 812 from C3-SMK-114 triggered a real evacuation. The sensor itself is fine.
+**Who did it:** Rekha Bhandari (jewellery designer)
 
-**Correct timeline**
-1. T01 03:11:40 QA test run starts, BROKER_URL empty (twist item)
-2. E05 03:11:59 device "nx-sim-02" (the replay tool, from address 10.20.4.77) connects to the live hub without a password
-3. E03 03:12:03 replayed alarm message (dated 14 Aug, old message number) arrives
-4. E01 03:12:04 fire alert from a single sensor
-5. E08 03:12:06 sirens, evacuation
-6. E09 03:25 fire team: nothing found, sensor works normally
+**What happened.** Rekha Bhandari swapped the real necklace for a replica she had made (stamped R.B.) on Sunday evening, between 7:20 and 7:25 PM, while the curator was out on a phone call. She held the necklace with her back to Mr. Anil, who has poor eyesight. The boy's Saturday sketch and the cleaner's Sunday 8 AM log show the real necklace, with its lion clasp, was there until Sunday. The case was not opened at night, so the camera gap is irrelevant. Ramesh Bose shares the initials but had a green wristband and could not enter the gallery. Joseph owes money but was at the main gate from 7 to 9 PM. Rekha's studio was nearly bankrupt.
 
-**Trap:** maintenance tickets for the sensor (E02), wardens blaming it (E06), AI diagnosis "sensor broken" (E07), plus noise in the same minute (E15: water tank, door card).
+**Common wrong answer:** Joseph Pinto (night guard)
 
-**Clues available before the twist:** the alarm message is dated 14 August and its message number goes backwards (E03, E04); the sender "nx-sim-02" is the replay tool's name (E11) and connects from 10.20.4.77, which is the QA team's test computer (E04, E05, E12); the drill recording was given to QA (E10); the tool uses the live hub when BROKER_URL is empty (E11); the fire team found the sensor working (E09).
+**Round 1**
 
-**Misleading:** E02, E06, E07, E15. **Irrelevant:** E13 power dip (different block), E14 mess timings.
+- **Q1** (The necklace) What kind of theft was this? → **B** · The real necklace was swapped for a copy
+- **Q2** (Sketchbook) What does the sketch tell us? → **D** · The real one was still there on Saturday
+- **Q3** (Cleaner's log) What does this narrow down? → **A** · The swap happened after Sunday 8 AM
+- **Q4** (Alarm and CCTV) What does this tell us about the night? → **C** · The case stayed shut all night
+- **Q5** (Key box) When could the swap have happened? → **D** · While the case was open on Sunday evening
+- **Q6** (Initials) What can we say so far? → **C** · It points to an R.B., but which one could reach it?
+- **Q7** (Guest list) Could Ramesh have reached the necklace? → **B** · No, he could not enter the gallery
+- **Q8** (The guard) What does this tell us about Joseph? → **A** · He owes money, but he was at the gate
 
-**Good fixes:** test tools should never default to the live system; require a password on the live hub; keep test computers away from building systems; reject old-dated or out-of-order messages; require two sensors before evacuating.
+**Twist.** New evidence has come in: statements from the curator and from another guest who was in the gallery.
+
+- **T1** (Curator's statement) When was the open case not watched by the curator? → **C** · From 7:20 PM to 7:25 PM
+- **T2** (Guest's statement) What most likely happened in those five minutes? → **A** · Rekha swapped it for a copy she had made
+- **T3** (Guest's statement) What was the motive? → **D** · Money to save her studio
+
+**A good report** names the culprit, says how it was done, and points to at least two clues that prove it (and ideally one clue that clears the first suspect).
+
+---
+
+## CASE-D · The Missing Person
+
+**Who did it:** Kavya Nair (understudy)
+
+**What happened.** Kavya Nair, the understudy, lured Ananya to the old costume store room B-07 with a message at 9:08 PM, locked her in with a new padlock and wrote a fake goodbye note on the mirror. The note is in Kavya's blue gel pen with her spelling mistake “definately”; Ananya uses a black fountain pen and spells the word correctly. Ananya's wallet, ID, keys and charger were left behind, and the janitor heard knocking from the basement at 9:40. Kavya said she left at 8:45, but the gate register shows 10:20. If Ananya cannot perform, the lead goes to Kavya. Dev was at the light console in view of the crew and kept calling her; the director left at 9:15. Ananya is found safe in B-07.
+
+**Common wrong answer:** Dev Malhotra (stage manager, her ex)
+
+**Round 1**
+
+- **Q1** (Her bag) What does the bag tell us? → **B** · She probably did not leave on her own
+- **Q2** (Mirror note) What does this suggest? → **C** · Someone else probably wrote the note
+- **Q3** (Spelling) What does the spelling tell us? → **D** · The writer makes a mistake Ananya does not
+- **Q4** (Light console) What does this tell us about Dev? → **A** · He stayed in view and was trying to find her
+- **Q5** (Old poster) What does the poster prove? → **B** · A reason to suspect Dev, but not proof
+- **Q6** (Gate register) Why is the director an unlikely suspect? → **C** · He left at 9:15, and losing her hurts his show
+- **Q7** (Understudy) Who gains most if Ananya misses the show? → **D** · Kavya
+- **Q8** (Janitor) What could the knocking mean? → **A** · Someone may be shut in down in the basement
+
+**Twist.** New evidence has come in: Ananya's phone has been unlocked, and the stage key board and the gate register have been checked.
+
+- **T1** (Her phone) What does this show? → **C** · Kavya lied, and she called Ananya to the store room
+- **T2** (Key board) Where is Ananya most likely to be? → **B** · Locked inside store room B-07
+- **T3** (Kavya's script) Who wrote the note on the mirror? → **D** · Kavya
+
+**A good report** names the culprit, says how it was done, and points to at least two clues that prove it (and ideally one clue that clears the first suspect).

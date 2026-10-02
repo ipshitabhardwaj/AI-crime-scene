@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { EvidenceTag, Stage, TimelineEntry } from "@/lib/types";
+import { choiceToLetter, letterToChoice } from "@/lib/scoring";
+import type { Stage } from "@/lib/types";
 
 /**
  * Team actions. Each one is a single call to a database function
@@ -21,8 +22,7 @@ export type ActionResult =
 const MESSAGES: Record<string, { code: Exclude<ActionResult, { ok: true }>["code"]; error: string }> = {
   CLOSED: { code: "CLOSED", error: "Editing is closed: the phase is over, time is up, or this part is already submitted." },
   CONFLICT: { code: "CONFLICT", error: "A teammate saved a newer version on another device." },
-  INVALID_EVIDENCE: { code: "INVALID", error: "That evidence item is not part of your case." },
-  INVALID_TIMELINE: { code: "INVALID", error: "The timeline could not be saved (max 60 steps)." },
+  INVALID_EVIDENCE: { code: "INVALID", error: "That question is not part of your case." },
   INVALID_REPORT: { code: "INVALID", error: "The report could not be saved." },
   NOT_TEAM: { code: "AUTH", error: "You are logged out. Log in again with your team code and PIN." },
 };
@@ -34,53 +34,55 @@ function fail(message: string | undefined): ActionResult {
   return { ok: false, code: "ERROR", error: "Could not save. Please try again." };
 }
 
-export async function saveTag(evidenceId: string, tag: EvidenceTag | null, note: string): Promise<ActionResult> {
+/**
+ * Save the team's answer to one question (choice 1–4).
+ * Stored through save_tag: the answer letter goes into the note, the tag is a
+ * fixed marker meaning "answered" (see lib/cases/load.ts for the mapping).
+ * Round-1 answers cannot be changed once the twist is out.
+ */
+export async function saveAnswer(questionId: string, choice: number): Promise<ActionResult> {
+  const letter = choiceToLetter(Number(choice));
+  if (!letter) return { ok: false, code: "INVALID", error: "Pick one of the four options." };
   const supabase = await createClient();
-  const { error } = await supabase.rpc("save_tag", { p_evidence: evidenceId, p_tag: tag, p_note: String(note ?? "").slice(0, 2000) });
+  const [{ data: q }, { data: ev }] = await Promise.all([
+    supabase.from("evidence").select("is_twist").eq("id", questionId).maybeSingle<{ is_twist: boolean }>(),
+    supabase.from("event").select("phase").eq("id", 1).maybeSingle<{ phase: string }>(),
+  ]);
+  if (!q) return { ok: false, ...MESSAGES.INVALID_EVIDENCE };
+  if (!q.is_twist && ev?.phase !== "investigation") return { ok: false, ...MESSAGES.CLOSED };
+  const { error } = await supabase.rpc("save_tag", { p_evidence: questionId, p_tag: "relevant", p_note: letter });
   return error ? fail(error.message) : { ok: true };
 }
 
 /**
- * Read this team's current tag for one item (row security limits it to the
- * team's own rows). Used to show a teammate's change on another device.
+ * The team's current answers, { questionId: choice }. Row security limits it
+ * to the team's own rows. Used to show a teammate's answers on another device.
  * Returns null when it could not be read.
  */
-export async function readTag(evidenceId: string): Promise<{ tag: EvidenceTag | null; note: string } | null> {
+export async function readAnswers(): Promise<Record<string, number> | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("evidence_tags").select("tag, note").eq("evidence_id", evidenceId).maybeSingle<{ tag: EvidenceTag | null; note: string }>();
+  const { data, error } = await supabase.from("evidence_tags").select("evidence_id, note").returns<{ evidence_id: string; note: string }[]>();
   if (error) return null;
-  return { tag: data?.tag ?? null, note: data?.note ?? "" };
+  const out: Record<string, number> = {};
+  for (const r of data ?? []) {
+    const c = letterToChoice(r.note);
+    if (c) out[r.evidence_id] = c;
+  }
+  return out;
 }
 
-export async function saveTimeline(stage: Stage, entries: TimelineEntry[], baseVersion: number): Promise<ActionResult> {
-  if (!Array.isArray(entries) || entries.length > 60) return { ok: false, ...MESSAGES.INVALID_TIMELINE };
-  const supabase = await createClient();
-  const payload = entries.map((e) => ({
-    evidence_id: e.evidence_id || null,
-    time_label: String(e.time_label ?? "").slice(0, 60),
-    description: String(e.description ?? "").slice(0, 500),
-  }));
-  const { data, error } = await supabase.rpc("save_timeline", { p_stage: stage, p_entries: payload, p_base: baseVersion });
-  return error ? fail(error.message) : { ok: true, version: data as number };
-}
+/** The short report: who did it, and why the team thinks so. */
+export type ReportFields = { culprit: string | null; explanation: string };
 
-export type ReportFields = {
-  what_happened: string;
-  root_cause_category: string | null;
-  root_cause_md: string;
-  responsible: string;
-  key_evidence: string[];
-  fix_md: string;
-};
-
+/** Database columns: culprit → root_cause_category, explanation → what_happened. */
 function clean(f: ReportFields) {
   return {
-    what_happened: String(f.what_happened ?? "").slice(0, 5000),
-    root_cause_category: f.root_cause_category || null,
-    root_cause_md: String(f.root_cause_md ?? "").slice(0, 5000),
-    responsible: String(f.responsible ?? "").slice(0, 500),
-    key_evidence: Array.isArray(f.key_evidence) ? f.key_evidence.map(String).slice(0, 50) : [],
-    fix_md: String(f.fix_md ?? "").slice(0, 5000),
+    what_happened: String(f.explanation ?? "").slice(0, 5000),
+    root_cause_category: f.culprit || null,
+    root_cause_md: "",
+    responsible: "",
+    key_evidence: [],
+    fix_md: "",
   };
 }
 

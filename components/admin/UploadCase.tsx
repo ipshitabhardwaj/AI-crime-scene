@@ -32,7 +32,7 @@ export default function UploadCase({ inProgress }: { inProgress: boolean }) {
       {result?.ok && <p className="text-sm text-ok">{result.message}</p>}
       {result && !result.ok && <pre className={`${ui.card} whitespace-pre-wrap text-sm text-danger`}>{result.error}</pre>}
       <p className="text-xs text-muted">
-        Uploading a case with an existing code updates it in place (teams keep their tags). Evidence removed from the file is deleted.
+        Uploading a case with an existing code updates it in place (teams keep their answers). Questions removed from the file are deleted.
       </p>
     </div>
   );

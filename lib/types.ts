@@ -43,31 +43,39 @@ export type CaseRow = {
   root_cause_options: string[];
 };
 
-export type EvidenceType = "log" | "chat" | "email" | "db" | "api" | "code" | "screenshot" | "ai_output" | "note";
-export type EvidenceTag = "relevant" | "irrelevant" | "misleading";
 export type Stage = "initial" | "final";
 
+/** A question row as stored in the `evidence` table (see lib/cases/load.ts). */
 export type EvidenceRow = {
   id: string;
   case_id: string;
   code: string;
-  type: EvidenceType;
   title: string;
-  time_label: string | null;
-  content: Record<string, unknown>;
+  content: { clue_label?: string; clue_title?: string; clue_text?: string; options?: string[] };
   is_twist: boolean;
   sort_order: number;
 };
 
-export type TagRow = { evidence_id: string; tag: EvidenceTag | null; note: string };
-
-export type TimelineEntry = {
-  id?: string;
-  position: number;
-  evidence_id: string | null;
-  time_label: string;
-  description: string;
+/** One multiple-choice question as the pages use it. */
+export type Question = {
+  id: string;
+  code: string;
+  question: string;
+  clue: { label: string; title: string; text: string };
+  options: string[];
+  twist: boolean;
 };
+
+export function toQuestion(e: EvidenceRow): Question {
+  return {
+    id: e.id,
+    code: e.code,
+    question: e.title,
+    clue: { label: e.content.clue_label ?? "Clue", title: e.content.clue_title ?? "", text: e.content.clue_text ?? "" },
+    options: Array.isArray(e.content.options) ? e.content.options : [],
+    twist: e.is_twist,
+  };
+}
 
 export type Submission = {
   team_id: string;
@@ -78,7 +86,6 @@ export type Submission = {
   responsible: string;
   key_evidence: string[];
   fix_md: string;
-  tags_snapshot: Record<string, EvidenceTag> | null;
   submitted_at: string | null;
   locked: boolean;
   /** set by the official lock (admin), not by the team's own submission */

@@ -4,9 +4,9 @@ Next.js 16 + Supabase. Runs the whole event for 60–70 teams (up to ~300 device
 
 | Who | Where | What they can do |
 | --- | --- | --- |
-| Teams | `/play` | Read the case, open each evidence item in its native look (log, chat, email, table, API response, code, AI output, screenshot), tag it relevant / irrelevant / misleading with notes, build an ordered incident timeline, submit an Initial Conclusion (and keep investigating until the lock), then write and submit the final report. Everything autosaves and survives refreshes, flaky Wi-Fi and several teammates on several laptops. |
+| Teams | `/play` | Read a short case (picture, story, suspects), answer multiple-choice questions (one clue per question), submit an Initial Conclusion (who did it and why), then after the twist answer a few new questions and submit the Final Report. No technical knowledge needed. Everything autosaves and survives refreshes, flaky Wi-Fi and several teammates on several laptops. |
 | Organisers | `/admin` | Import teams from the registration CSV, print credential slips, check teams in, upload/preview cases, run the event phase by phase with a live status table, extend time, unlock a team, auto-score, assign judges, shortlist, export results, reset after a dry run. |
-| Judges | `/judge` | After submissions close: see each assigned team's reports, timeline and tags next to the answer key, and score with a rubric ("Save & next team"). |
+| Judges | `/judge` | After submissions close: see each assigned team's two reports and question answers next to the answer key, and score with a rubric ("Save & next team"). |
 | Projector | `/screen` | Big timer, phase, "NEW EVIDENCE RELEASED", presentation order, animated top-10 reveal. No login. |
 
 **Event day:** follow [`RUNBOOK.md`](RUNBOOK.md). **Answers:** [`cases/SOLUTIONS.md`](cases/SOLUTIONS.md) (organisers only).
@@ -21,6 +21,7 @@ Next.js 16 + Supabase. Runs the whole event for 60–70 teams (up to ~300 device
    - `0002_event_operations.sql` — locking, twist release, reset
    - `0003_hardening.sql` — checked write functions, versioning, judge rules, live status, login throttling
    - `0004_event_rules.sql` — initial hypothesis + investigation until the lock, per-phase extra time, new score columns, judge access after close only, self-checks
+   - `0005_reset_fix.sql` — optional: lets *Reset event* run as one database transaction on hosted Supabase (without it the app does the same reset step by step)
    0002–0004 are safe to re-run **in order**. Never re-run an older one on its own after a newer one: 0002 would bring back old function versions (0004's self-check reports this as "functions are the 0004 versions: outdated"). If that happens, re-run 0004.
 3. **SQL Editor** → run `supabase/tests/security_checks.sql`. It plays through the rules as teams, a judge and a visitor inside a transaction and rolls everything back. It must end with `ALL SECURITY CHECKS PASSED`. Run it before the event, not during.
 4. **Authentication settings** — check before changing anything (`docs/PRE_PRODUCTION_CHECKLIST.md` §14–16):
@@ -83,29 +84,29 @@ Phases (Control room): **Waiting → Investigation → Initial locked → Twist 
 
 | Entering | Effect |
 |---|---|
-| Initial locked (or later) | **Official lock**: every initial hypothesis, tag and initial timeline is locked; never-submitted drafts are "auto-locked" (still scored) |
-| Twist or later | twist evidence becomes visible; each team gets an editable copy of its timeline and report |
-| Closed or later | every final report is locked, with a snapshot of the team's tags; judges can see their assigned teams |
+| Initial locked (or later) | **Official lock**: every Initial Conclusion and every round-1 answer is locked; never-submitted drafts are "auto-locked" (still scored) |
+| Twist or later | the twist questions become visible; each team's Final Report starts as a copy of its Initial Conclusion |
+| Closed or later | every Final Report is locked; judges can see their assigned teams |
 | Results | judges can no longer change scores |
 
-**Initial Conclusion.** Submitting it records the team's first answer (scored as the "initial hypothesis"): it can never be changed. The team **keeps tagging and editing its timeline until the official lock**. The final report after the twist is a separate document; submitting it ends all editing.
+**Initial Conclusion.** Submitting it records the team's first answer (scored as the "initial hypothesis"): it can never be changed. The team **can still change its question answers until the official lock**. The Final Report after the twist is a separate document; submitting it ends all editing.
 
 **Extra time.** `+5` on Live status applies to **the current phase only** (default). *Whole event* adds time to every remaining deadline. Both are cleared by Reset.
 
 Rules enforced by the **database**, not just the UI:
 
 - A team only sees its own case, never answer keys, other teams, scores or PINs.
-- Twist evidence is visible only after release.
+- Twist questions are visible only after release.
 - Writes are accepted only while allowed (see above) and before the team's deadline.
-- Submission time and tag snapshot are set by the server; submitting twice is harmless.
+- Submission time is set by the server; submitting twice is harmless.
 - Judges see only their assigned teams (work, case, answer key), only from Closed.
 - Judges score only in Closed/Presentations, and presentation scores only for shortlisted teams.
 
 **Logging out** ends only that device's session; teammates on other laptops stay logged in.
 
-**Reset event** (Control room → *More options* → *Danger zone*, type RESET):
+**Reset event** (Control room → *More options* → *Danger zone*, type RESET; or from the terminal: `npm run reset -- RESET`):
 
-- Deletes all tags, timelines, reports, scores, judge scores/assignments, the shortlist and all extra time, and returns to Waiting.
+- Deletes all answers, reports, scores, judge scores/assignments, the shortlist and all extra time, and returns to Waiting.
 - **Keeps** teams, logins/PINs, check-ins, cases, answer keys, judges and admins.
 - Running it twice is harmless.
 - To also remove teams after a dry run: Teams → *Delete ALL teams* (Waiting only, type DELETE ALL TEAMS).
@@ -116,42 +117,34 @@ Rules enforced by the **database**, not just the UI:
 
 | Criterion | Points | Who |
 | --- | --- | --- |
-| Evidence analysis (relevance 10 + red herrings 5) | 15 | Auto |
-| Timeline (coverage + order − wrong events) | 15 | Auto |
-| Initial hypothesis already right (before the twist) | 6 | Auto |
-| Root cause (final category) | 8 | Auto |
-| Evidence support (cited pre-twist evidence) | 6 | Auto |
-| Responsible party | 10 | Judge |
+| Questions, round 1 (8 × 3) | 24 | Auto |
+| Twist questions (3 × 4) | 12 | Auto |
+| Initial Conclusion names the real culprit | 6 | Auto |
+| Final Report names the real culprit | 8 | Auto |
+| Right culprit, clearly named | 10 | Judge |
 | Logical reasoning | 15 | Judge |
-| Evidence-based conclusion | 10 | Judge |
-| Report & presentation (shortlist only) | 15 | Judge |
+| Use of clues | 10 | Judge |
+| Presentation (shortlist only) | 15 | Judge |
 
-Blind strategies score low: tagging everything *Relevant* earns 0 for tagging. Copying the answer the twist reveals, with shallow tags and timeline, earns about 13/50.
-
-Ties break on the earlier final submission (auto-locked reports count as last).
-
-**Rules shown to teams:**
-
-- **Tags:** *Relevant* = part of what actually happened, or needed to prove it (even if it looked suspicious). *Misleading* = points toward a wrong explanation and is not part of the real cause. *Irrelevant* = unrelated noise.
-- **Root-cause categories:** one-line definitions next to the dropdown (`lib/root-causes.ts`).
+No negative marking. Round-1 answers are frozen at the lock. Ties break on the earlier final submission (auto-locked reports count as last).
 
 ## 7. Case file format
 
-See `cases/case-a-217am-incident.json` (event cases) and `cases/examples/sample-case.json` (test only). Top level: `code`, `title`, `briefing_md`, `root_cause_options` (identical for every case), `twist_md`, `evidence[]`, `answer`. Evidence: `code` (E01…, twist items T01…), `type`, `title`, `time_label`, `is_twist`, `content`, `key: { tag, timeline_pos }`.
+See `cases/case-a-locked-room.json` (event cases) and `cases/examples/sample-case.json` (tiny example). A case is plain JSON:
 
-| `type` | `content` |
+| Field | What |
 | --- | --- |
-| `log` | `{ "lines": ["02:17:03 INFO ...", "..."] }` — WARN/ERROR lines are coloured |
-| `chat` | `{ "channel": "#ops", "messages": [{ "from": "Rohan", "at": "23:40", "text": "..." }] }` |
-| `email` | `{ "from", "to", "cc", "subject", "sent_at", "body_md" }` |
-| `db` | `{ "table": "orders", "columns": ["id", "..."], "rows": [["1", "..."]] }` |
-| `api` | `{ "method": "GET", "url": "...", "status": 200, "headers": {...}, "body": {...} }` |
-| `code` | `{ "filename": "parser.py", "language": "python", "source": "..." }` |
-| `screenshot` | `{ "image_url": "/cases/case-a/login.png", "caption": "..." }` — https:// or site-relative only; put files in `public/cases/...` |
-| `ai_output` | `{ "model": "...", "prompt": "...", "output": "..." }` |
-| `note` | `{ "body_md": "..." }` |
+| `code`, `title` | e.g. `CASE-A`, "The Locked Room". The picture is chosen by code (`components/CaseArt.tsx`); unknown codes get a generic picture |
+| `briefing_md` | The short story (under ~220 words) |
+| `suspects` | 3–5 names (the event cases have 3), shown on the case page and as the choices in the report |
+| `questions[]` | Round 1. Each: `code` (Q1…), `clue: { label, title, text }`, `question`, `options` (exactly 4), `answer` (1–4) |
+| `twist_md` | One sentence announcing the new evidence |
+| `twist_questions[]` | Same shape, coded T1… Hidden until the twist |
+| `answer` | `first_suspect` (who the story points to), `culprit` (scored), `explanation` (shown to judges) |
 
-`npm run validate:cases` checks schema, codes, twist items, noise share (25–50%), a gap-free timeline of relevant time-stamped items, answer categories, that the evidence never spells out the answer, identical option lists, and that a perfect team scores 50. Uploading a case with an existing code updates it in place (teams keep their tags); during the event an upload needs an explicit confirmation.
+`npm run validate:cases` checks the format, question counts, four different options, and that a perfect team scores 50. `npm run audit:cases` checks that correct answers are spread over A–D and are not always the longest option. Uploading a case with an existing code updates it in place (teams keep their answers); during the event an upload needs an explicit confirmation.
+
+**How it is stored (no extra migration):** each question is a row in the `evidence` table, the correct option is `answer_evidence.timeline_pos`, the suspects are `cases.root_cause_options`, and a team's answer is a row in `evidence_tags` whose `note` holds the letter A–D. The timeline tables are unused.
 
 ## 8. Capacity notes
 
@@ -160,17 +153,16 @@ See `cases/case-a-217am-incident.json` (event cases) and `cases/examples/sample-
 - **Every "read all rows" query pages** past the API's 1,000-row limit. The project's *Max rows* setting must be ≥ 1000 (`verify:prod` checks it).
 - **Login capacity:** sign-ins + token refreshes per 5 minutes ≈ teams × devices per team × share logging in within 5 minutes × 1.15 (wrong PINs) × 2 (safety). With 70 teams, all logging in at once, this is 161 (1 device), 322 (2), 483 (3) or 644 (4). Staggered over 30 minutes it is about a third of that. The admin dashboard shows the figure for your team count.
 - **Tested locally** (Postgres 16 + GoTrue + PostgREST, not hosted Supabase) with 70 teams × 4 devices:
-  - 840 concurrent tag saves.
-  - 280 simultaneous timeline saves: one clean winner per team, the others get a conflict message.
+  - 840 concurrent answer saves (measured on the earlier evidence-board version; the quiz uses the same save path).
   - 140 simultaneous submits.
-  - An admin lock racing about 1,500 report/tag/timeline writes: nothing accepted or changed after the lock.
+  - An admin lock racing about 1,500 writes: nothing accepted or changed after the lock.
 
 ## 9. Code map
 
 | Path | What |
 | --- | --- |
-| `app/play`, `components/play` | Team portal (board, evidence, timeline, report, autosave with retry + conflict detection) |
-| `components/evidence` | Evidence renderers per type |
+| `app/play`, `components/play` | Team portal (case page, one-question-per-screen quiz, short report, autosave with retry + conflict detection) |
+| `components/CaseArt.tsx`, `components/CrimeTape.tsx` | Case pictures and the crime-scene tape |
 | `app/admin`, `components/admin` | Organiser screens; `lib/admin-action.ts` shows results/errors after each action |
 | `app/judge` | Judge screens |
 | `app/screen`, `components/ScreenView.tsx` | Projector |
@@ -179,7 +171,6 @@ See `cases/case-a-217am-incident.json` (event cases) and `cases/examples/sample-
 | `lib/state-machine.ts` | Allowed phase changes (single source of truth) |
 | `components/ui.tsx`, `lib/ui.ts`, `lib/journey.ts` | Shared UI building blocks (page header, stepper, "what to do now" card), a team's step-by-step journey |
 | `lib/capacity.ts`, `scripts/verify-production.ts` | Login capacity plan, production self-check |
-| `lib/root-causes.ts` | Category definitions shown to teams |
 | `docs/` | Pre-production checklist, organiser one-pager, scoring, state machine, case audit |
 | `lib/cases` | Case schema + loader |
 | `supabase/migrations`, `supabase/tests` | Database, security rules, event operations, security test |

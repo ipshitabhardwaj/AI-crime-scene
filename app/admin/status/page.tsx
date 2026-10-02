@@ -42,7 +42,7 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
       />
       <p className="text-sm text-muted">
         {count((t) => !!t.last_activity && now - new Date(t.last_activity).getTime() < 5 * 60_000)} of {teams.length} teams active in the last 5 min ·{" "}
-        {count((t) => t.initial_state === "submitted")} Initial Conclusions submitted · {count((t) => t.final_state === "submitted")} final reports submitted
+        {count((t) => t.initial_state === "submitted")} Initial Conclusions submitted · {count((t) => t.final_state === "submitted")} Final Reports submitted
       </p>
       <section className={ui.cardTight} aria-label="Team status">
         <div className="flex flex-wrap items-center gap-3 border-b border-line px-5 py-3">
@@ -61,8 +61,7 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
               <tr>
                 <th className={ui.th}>Team</th>
                 <th className={ui.th}>Case</th>
-                <th className={ui.th}>Tags</th>
-                <th className={ui.th}>Timeline</th>
+                <th className={ui.th}>Answered</th>
                 <th className={ui.th}>Initial</th>
                 <th className={ui.th}>Final</th>
                 <th className={ui.th}>Last activity</th>
@@ -80,10 +79,7 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
                     </span>
                   </td>
                   <td className={`${ui.td} font-mono ${t.case_code ? "text-muted" : "text-danger"}`}>{t.case_code ?? "none"}</td>
-                  <td className={`${ui.td} tabular-nums`}>{t.tags}</td>
-                  <td className={`${ui.td} tabular-nums text-muted`} title="initial / final steps">
-                    {t.tl_initial} / {t.tl_final}
-                  </td>
+                  <td className={`${ui.td} tabular-nums`} title="Questions answered so far (round 1 + twist)">{t.tags}</td>
                   <td className={ui.td}>
                     {t.initial_state ? <Pill tone={stateCls(t.initial_state)}>{t.initial_state}</Pill> : <span className="text-muted">—</span>}
                     {t.initial_state === "submitted" && <Unlock teamId={t.team_id} stage="initial" />}
@@ -115,7 +111,7 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
               ))}
               {shownTeams.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-5 py-8 text-center text-muted">
+                  <td colSpan={7} className="px-5 py-8 text-center text-muted">
                     {view === "attention" ? "No team needs attention right now. ✓" : "No teams yet — import them on the Teams page."}
                   </td>
                 </tr>

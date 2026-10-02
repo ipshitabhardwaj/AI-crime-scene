@@ -1,0 +1,196 @@
+{
+  "code": "CASE-A",
+  "title": "The Locked Room",
+  "briefing_md": "Vikram Rathore, 58, owner of Rathore Publishing House, was found dead at 11:20 PM on the floor of his study, beside the library ladder.\n\nThe study door was locked, and his key lay on the desk inside. The window was open a few inches. It looked as if a burglar got in and Vikram fell from the ladder.\n\nThe police are not convinced.\n\nThree people are being talked about:\n• Daniel Rathore, 28, his nephew and heir, who owes money to friends. He says he was at the cinema all evening.\n• Sarah Menon, 45, his business partner and chief editor for 15 years. She says she only dropped some papers at the gate around 10:15 PM and never entered the house.\n• Meera Iyer, 52, the housekeeper for 20 years. She served coffee in the study at 10:10 PM.\n\nMost people suspect Daniel, who inherits everything. What really happened, and who did it?",
+  "suspects": [
+    "Daniel Rathore (nephew and heir)",
+    "Sarah Menon (business partner)",
+    "Meera Iyer (housekeeper)"
+  ],
+  "questions": [
+    {
+      "code": "Q1",
+      "clue": {
+        "label": "The window",
+        "title": "Study window and the garden below",
+        "text": "• The window is open 6 inches. The sill is dry.\n• No fingerprints on the latch or the frame.\n• The flower bed below has soft soil, completely undisturbed.\n• It rained from 9:00 PM to 10:00 PM."
+      },
+      "question": "What does this tell us about the “burglar”?",
+      "options": [
+        "A burglar climbed in before the rain started",
+        "Nobody came in through this window",
+        "The burglar wore gloves and jumped over the flowers",
+        "The rain washed away every single trace"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "Q2",
+      "clue": {
+        "label": "The ladder",
+        "title": "Library ladder",
+        "text": "• No scuff marks on the rungs.\n• The dust on the top shelf is untouched.\n• Vikram was found lying beside the ladder."
+      },
+      "question": "What does the ladder tell us?",
+      "options": [
+        "He slipped from the very top rung",
+        "The ladder broke under his weight",
+        "He never climbed it; the fall was staged",
+        "He was reaching for a book on the top shelf"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "Q3",
+      "clue": {
+        "label": "Wall clock",
+        "title": "The clock and the housekeeper",
+        "text": "• The wall clock's glass is cracked. Its hands stopped at 10:47.\n• Meera: “At about 10:45 I heard shouting from the study.”"
+      },
+      "question": "When was Vikram most likely attacked?",
+      "options": [
+        "At about 10:10 PM",
+        "At about 11:20 PM",
+        "At about 9:30 PM",
+        "At about 10:47 PM"
+      ],
+      "answer": 4
+    },
+    {
+      "code": "Q4",
+      "clue": {
+        "label": "Paperweight",
+        "title": "Brass owl paperweight",
+        "text": "• Found under the sofa, wiped clean.\n• A clean circle in the dust on the desk shows where it normally sits."
+      },
+      "question": "What is the paperweight most likely to be?",
+      "options": [
+        "The weapon, taken from the desk and wiped",
+        "A gift that the burglar dropped by mistake",
+        "Something that rolled away during the rain",
+        "A toy that belongs to Daniel"
+      ],
+      "answer": 1
+    },
+    {
+      "code": "Q5",
+      "clue": {
+        "label": "Coffee cups",
+        "title": "Two cups on the table",
+        "text": "• One cup of black coffee.\n• One cup with sugar, and a torn sugar sachet beside it.\n• Meera: “Sir asked for two coffees at 10:00. I served them at 10:10. Sir drinks his black. Sarah madam always takes sugar.”"
+      },
+      "question": "What do the cups show?",
+      "options": [
+        "Vikram drank both cups of coffee by himself",
+        "The burglar stopped to make himself a coffee",
+        "A visitor who takes sugar drank with him",
+        "Meera sat down and drank coffee with Vikram"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "Q6",
+      "clue": {
+        "label": "Phone",
+        "title": "Vikram's phone",
+        "text": "Last message sent, 10:36 PM, to his lawyer:\n“Meet me 9 AM. I am ending Sarah's partnership. Bring the papers.”"
+      },
+      "question": "Who had the most to lose that night?",
+      "options": [
+        "Daniel",
+        "Meera",
+        "The lawyer",
+        "Sarah"
+      ],
+      "answer": 4
+    },
+    {
+      "code": "Q7",
+      "clue": {
+        "label": "Cinema ticket",
+        "title": "Daniel's evening",
+        "text": "• Ticket stub: 9:30 PM show, ended 11:00 PM.\n• The cinema is 15 minutes from the house.\n• Daniel: “I didn't even know there was a spare key. Uncle never trusted me with anything.”"
+      },
+      "question": "What does the ticket suggest about Daniel?",
+      "options": [
+        "He was hiding in the study for the whole evening",
+        "He was at the cinema when Vikram was attacked",
+        "He came home at 10:00 PM for coffee",
+        "He met Sarah at the gate at 10:15 PM"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "Q8",
+      "clue": {
+        "label": "The door",
+        "title": "The locked study door",
+        "text": "• The study door was locked.\n• Vikram's own key was on the desk inside, not in the lock.\n• Nobody came or went through the window."
+      },
+      "question": "If someone attacked Vikram, how did that person leave a locked room?",
+      "options": [
+        "By locking the door from outside with a key",
+        "By climbing out of the window into the garden",
+        "By hiding inside the study until morning",
+        "By breaking the door and repairing it"
+      ],
+      "answer": 1
+    }
+  ],
+  "twist_md": "New evidence has come in: the gate guard's log, Vikram's diary and a second key to the study.",
+  "twist_questions": [
+    {
+      "code": "T1",
+      "clue": {
+        "label": "Gate log",
+        "title": "Guard Harbans Singh's register",
+        "text": "Sarah Menon — IN 10:12 PM, OUT 11:02 PM\nDaniel Rathore — IN 11:15 PM\n\nSarah's statement: “I only dropped some papers at the gate around 10:15 and left. I never entered the house.”"
+      },
+      "question": "What does the log show?",
+      "options": [
+        "Sarah told the truth about her whole evening",
+        "Daniel came home before Sarah arrived",
+        "Sarah lied: she was inside for 50 minutes",
+        "The guard was asleep the whole evening"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "T2",
+      "clue": {
+        "label": "Spare key",
+        "title": "Meera's statement",
+        "text": "“The spare study key hangs on a hook behind the umbrella stand. Only Sir, Sarah madam and I know about it. Tonight it was lying in the hallway plant pot, with soil on it.\n\nCook Lakshmi was with me in the kitchen from 10:15 to 11:10.”"
+      },
+      "question": "How was the study locked?",
+      "options": [
+        "Vikram locked it himself before he fell",
+        "The killer locked it outside with the spare key",
+        "Meera locked it while serving the coffee",
+        "Daniel locked it after he came home at 11:15 PM"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "T3",
+      "clue": {
+        "label": "Diary",
+        "title": "Vikram's diary, last page",
+        "text": "“S. has been moving company money into her own account. Confronting her tonight.”"
+      },
+      "question": "What was the motive?",
+      "options": [
+        "To stop Vikram exposing the stolen money",
+        "To inherit the publishing house more quickly",
+        "Anger about twenty years of low wages",
+        "A burglary that went badly wrong"
+      ],
+      "answer": 1
+    }
+  ],
+  "answer": {
+    "first_suspect": "Daniel Rathore (nephew and heir)",
+    "culprit": "Sarah Menon (business partner)",
+    "explanation": "It was murder staged as a burglary and a fall. Vikram had found that Sarah was moving company money and was ending the partnership. She came in at 10:12, had coffee with him (she takes sugar), they argued at about 10:45, and she struck him with the brass owl paperweight at 10:47, when the clock stopped. She wiped the paperweight, opened the window to fake a break-in, locked the door from outside with the spare key, dropped the key in the plant pot and left at 11:02. The dry sill, untouched flower bed and unmarked ladder show the break-in and the fall were fake. Daniel was at the cinema and reached the gate at 11:15. Meera was in the kitchen with the cook."
+  }
+}

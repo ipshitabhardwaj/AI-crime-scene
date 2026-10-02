@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { UserError, confirmed, runAction } from "@/lib/admin-action";
 import { requireRole } from "@/lib/auth";
+import { resetEventData } from "@/lib/reset";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { PHASES, phaseInfo, type EventPhase } from "@/lib/constants";
 import { WRITING_PHASES, checkTransition } from "@/lib/state-machine";
@@ -196,9 +197,8 @@ export async function resetEvent(formData: FormData) {
   await runAction(PATH, async () => {
     if (String(formData.get("confirm")).trim() !== "RESET") throw new UserError("Type RESET (capitals) to confirm.");
     const db = createAdminClient();
-    const { error } = await db.rpc("admin_reset_event");
-    if (error) throw new Error(error.message);
+    await resetEventData(db);
     revalidatePath("/admin", "layout");
-    return "Event reset: all tags, timelines, reports, scores, judge assignments and the shortlist were deleted. Phase is Waiting. Teams, cases and logins were kept.";
+    return "Event reset: all answers, reports, scores, judge assignments and the shortlist were deleted. Phase is Waiting. Teams, cases and logins were kept.";
   });
 }

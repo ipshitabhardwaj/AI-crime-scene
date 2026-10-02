@@ -1,0 +1,196 @@
+{
+  "code": "CASE-D",
+  "title": "The Missing Person",
+  "briefing_md": "Ananya Desai, lead actress of the college drama society, vanished on Friday night, 20 hours before the final show of “Midnight in Jaipur”.\n\nRehearsal ended at 9:00 PM. A note on her dressing-room mirror says she left on her own. Her friends do not believe it.\n\nThree people are being talked about:\n• Dev Malhotra, 23, the stage manager and Ananya's ex. He argued with her on Thursday.\n• Kavya Nair, 21, the understudy. She says she left around 8:45 PM and has not spoken to Ananya since rehearsal.\n• Mr. Sandeep Rao, 50, the director. He scolded Ananya in front of everyone last week.\n\nMost people suspect Dev. What happened to Ananya, where is she, and who is responsible?",
+  "suspects": [
+    "Dev Malhotra (stage manager, her ex)",
+    "Kavya Nair (understudy)",
+    "Mr. Sandeep Rao (director)"
+  ],
+  "questions": [
+    {
+      "code": "Q1",
+      "clue": {
+        "label": "Her bag",
+        "title": "Left in the dressing room",
+        "text": "Ananya's bag is still in the dressing room. Inside: her wallet, hostel ID, room keys and phone charger."
+      },
+      "question": "What does the bag tell us?",
+      "options": [
+        "She planned her trip very carefully",
+        "She probably did not leave on her own",
+        "She went back to her hostel room",
+        "She was robbed in the dressing room"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "Q2",
+      "clue": {
+        "label": "Mirror note",
+        "title": "The note and her notebook",
+        "text": "• The note on the mirror is written with a blue gel pen.\n• Ananya's notebook is written with a black fountain pen from the first page to the last."
+      },
+      "question": "What does this suggest?",
+      "options": [
+        "She changed pens to hide her handwriting",
+        "The note is older than the notebook",
+        "Someone else probably wrote the note",
+        "Nothing, because pens run out all the time"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "Q3",
+      "clue": {
+        "label": "Spelling",
+        "title": "Read the note closely",
+        "text": "The note says: “I can't do this anymore. I will definately not be back. Don't look for me.”\n\nIn Ananya's notebook the spelling is correct everywhere. She writes “definitely” correctly, twice."
+      },
+      "question": "What does the spelling tell us?",
+      "options": [
+        "Ananya wrote the note in a great hurry",
+        "The note is a line taken from the play",
+        "Ananya cannot spell long words",
+        "The writer makes a mistake Ananya does not"
+      ],
+      "answer": 4
+    },
+    {
+      "code": "Q4",
+      "clue": {
+        "label": "Light console",
+        "title": "Where was Dev?",
+        "text": "• Stage crew: “Dev was at the light console, in full view of all of us, from 9:00 to 10:30.”\n• Ananya's phone shows 3 missed calls from Dev between 9:20 and 9:35 PM.\n• Dev raised the alarm at 10:00 PM."
+      },
+      "question": "What does this tell us about Dev?",
+      "options": [
+        "He stayed in view and was trying to find her",
+        "He took her away from campus at 9:20 PM",
+        "He wrote the note while at the console",
+        "He left the campus as soon as rehearsal ended"
+      ],
+      "answer": 1
+    },
+    {
+      "code": "Q5",
+      "clue": {
+        "label": "Old poster",
+        "title": "Backstage wall",
+        "text": "A poster of last year's show still hangs backstage. It shows Dev and Ananya together; they were a couple then. They argued on Thursday."
+      },
+      "question": "What does the poster prove?",
+      "options": [
+        "It proves that Dev is responsible",
+        "A reason to suspect Dev, but not proof",
+        "It proves Ananya left because of Dev",
+        "It proves that Dev wrote the note"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "Q6",
+      "clue": {
+        "label": "Gate register",
+        "title": "The director",
+        "text": "• Main gate register: the director's car went out at 9:15 PM.\n• The director: “If Ananya cannot perform, my final show is in trouble. I need her on that stage.”"
+      },
+      "question": "Why is the director an unlikely suspect?",
+      "options": [
+        "He was at the light console with Dev all evening",
+        "He has never met Ananya outside rehearsals",
+        "He left at 9:15, and losing her hurts his show",
+        "He does not have a key to any room"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "Q7",
+      "clue": {
+        "label": "Understudy",
+        "title": "Who gains?",
+        "text": "The director: “Kavya wants the lead badly. If Ananya cannot perform tomorrow, the role goes to her.”"
+      },
+      "question": "Who gains most if Ananya misses the show?",
+      "options": [
+        "Dev",
+        "The director",
+        "The janitor",
+        "Kavya"
+      ],
+      "answer": 4
+    },
+    {
+      "code": "Q8",
+      "clue": {
+        "label": "Janitor",
+        "title": "Mr. Pillai's statement",
+        "text": "“Around 9:40 PM I heard faint knocking from the basement. I thought it was the pipes.”"
+      },
+      "question": "What could the knocking mean?",
+      "options": [
+        "Someone may be shut in down in the basement",
+        "The water pipes are certainly broken",
+        "Dev was repairing the stage lights",
+        "The final show had already started"
+      ],
+      "answer": 1
+    }
+  ],
+  "twist_md": "New evidence has come in: Ananya's phone has been unlocked, and the stage key board and the gate register have been checked.",
+  "twist_questions": [
+    {
+      "code": "T1",
+      "clue": {
+        "label": "Her phone",
+        "title": "Last message received",
+        "text": "9:08 PM, from Kavya:\n“Your cloak got moved to the old store room. Come, I'll open it.”\n\nKavya's statement: “I left around 8:45 PM. I haven't spoken to Ananya since rehearsal.”\nMain gate register: Kavya Nair — OUT 10:20 PM."
+      },
+      "question": "What does this show?",
+      "options": [
+        "Kavya told the truth about leaving at 8:45 PM",
+        "Dev sent that message using Kavya's phone",
+        "Kavya lied, and she called Ananya to the store room",
+        "Ananya had her cloak with her all evening"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "T2",
+      "clue": {
+        "label": "Key board",
+        "title": "Keys and the basement door",
+        "text": "• On the stage key board, the tag for B-07 (the old costume store room in the basement) is missing.\n• Door B-07 has old rusted hinges, but a brand-new shiny padlock."
+      },
+      "question": "Where is Ananya most likely to be?",
+      "options": [
+        "At her parents' home",
+        "Locked inside store room B-07",
+        "In the college library",
+        "At the railway station"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "T3",
+      "clue": {
+        "label": "Kavya's script",
+        "title": "Notes in the margin",
+        "text": "Kavya's copy of the script has notes in blue gel pen.\nIn one note she writes: “definately louder here”."
+      },
+      "question": "Who wrote the note on the mirror?",
+      "options": [
+        "Ananya",
+        "Dev",
+        "The director",
+        "Kavya"
+      ],
+      "answer": 4
+    }
+  ],
+  "answer": {
+    "first_suspect": "Dev Malhotra (stage manager, her ex)",
+    "culprit": "Kavya Nair (understudy)",
+    "explanation": "Kavya Nair, the understudy, lured Ananya to the old costume store room B-07 with a message at 9:08 PM, locked her in with a new padlock and wrote a fake goodbye note on the mirror. The note is in Kavya's blue gel pen with her spelling mistake “definately”; Ananya uses a black fountain pen and spells the word correctly. Ananya's wallet, ID, keys and charger were left behind, and the janitor heard knocking from the basement at 9:40. Kavya said she left at 8:45, but the gate register shows 10:20. If Ananya cannot perform, the lead goes to Kavya. Dev was at the light console in view of the crew and kept calling her; the director left at 9:15. Ananya is found safe in B-07."
+  }
+}

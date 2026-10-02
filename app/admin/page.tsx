@@ -74,7 +74,7 @@ export default async function AdminHome() {
         <ul className="mt-3 divide-y divide-line">
           {ready.map((r) => (
             <li key={r.label} className="flex items-start gap-3 py-3">
-              <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${r.ok ? "bg-ok text-ink" : "bg-accent text-ink"}`}>{r.ok ? "✓" : "!"}</span>
+              <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${r.ok ? "bg-ok text-ink" : "bg-accent text-white"}`}>{r.ok ? "✓" : "!"}</span>
               <div className="min-w-0 flex-1">
                 <p className="font-medium">{r.label}</p>
                 <p className="text-sm text-muted">{r.detail}</p>
@@ -103,7 +103,7 @@ export default async function AdminHome() {
             <li key={c.code} className="flex justify-between">
               <span className="font-mono text-text">{c.code}</span>
               <span>
-                {c.evidence[0]?.count ?? 0} evidence · <b className="text-text">{byCase.get(c.code) ?? 0}</b> teams
+                {c.evidence[0]?.count ?? 0} questions · <b className="text-text">{byCase.get(c.code) ?? 0}</b> teams
               </span>
             </li>
           ))}

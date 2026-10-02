@@ -43,7 +43,7 @@ export default function LoginForm() {
             <input name="pin" type="password" inputMode="numeric" placeholder="6 digits" autoComplete="current-password" className={`${input} font-mono`} required />
           </label>
           {teamState.error && <p role="alert" className="rounded-md border border-danger/50 bg-danger/10 p-2 text-sm text-danger">{teamState.error}</p>}
-          <button disabled={teamPending} className="w-full rounded-md bg-accent py-2.5 font-semibold text-ink disabled:opacity-60">
+          <button disabled={teamPending} className="w-full rounded-md bg-accent py-2.5 font-semibold text-white disabled:opacity-60">
             {teamPending ? "Checking…" : "Open case file"}
           </button>
           <p className="text-xs text-muted">Your team code and PIN are on the slip from the registration desk. Every teammate uses the same code and PIN.</p>
@@ -59,7 +59,7 @@ export default function LoginForm() {
             <input name="password" type="password" autoComplete="current-password" className={input} required />
           </label>
           {staffState.error && <p role="alert" className="rounded-md border border-danger/50 bg-danger/10 p-2 text-sm text-danger">{staffState.error}</p>}
-          <button disabled={staffPending} className="w-full rounded-md bg-accent py-2.5 font-semibold text-ink disabled:opacity-60">
+          <button disabled={staffPending} className="w-full rounded-md bg-accent py-2.5 font-semibold text-white disabled:opacity-60">
             {staffPending ? "Checking…" : "Log in"}
           </button>
         </form>

@@ -1,223 +1,52 @@
 {
   "code": "CASE-SAMPLE",
-  "title": "SAMPLE — The Midnight Price Drop",
-  "briefing_md": "This is a SAMPLE case for testing the platform, not an event case.\n\nAt 01:12 AM an online electronics store's AI pricing service repriced 4,210 products to about 1% of their normal price. Between 01:15 and 01:40 the store received 3,800 orders before an engineer switched the service off. Find out what happened.",
-  "root_cause_options": [
-    "Compromised credentials",
-    "Faulty deployment",
-    "Bad input data",
-    "Model error",
-    "Prompt injection",
-    "Misconfigured scheduled job",
-    "Insider action",
-    "Third-party outage"
+  "title": "Sample: The Missing Samosas",
+  "briefing_md": "A tiny example case that shows the file format. Do not use it in the event.\n\nA plate of samosas vanished from the staff room.",
+  "suspects": [
+    "The cat",
+    "The peon",
+    "The principal"
   ],
-  "twist_md": "Recovered from the CI server: the deployment log for the night of the incident.",
-  "evidence": [
+  "questions": [
     {
-      "code": "E01",
-      "type": "log",
-      "title": "pricing-service.log",
-      "time_label": "01:12",
-      "content": {
-        "lines": [
-          "01:12:03 INFO  feed-sync  fetched 4210 items from supplier-feed v3",
-          "01:12:04 INFO  repricer   applied rules to 4210 items",
-          "01:12:04 WARN  repricer   avg price changed -99.0% (threshold alert disabled)",
-          "01:12:05 INFO  publisher  pushed 4210 prices to storefront"
-        ]
+      "code": "Q1",
+      "clue": {
+        "label": "Note",
+        "title": "Plate",
+        "text": "Crumbs lead to the window. Paw prints on the sill."
       },
-      "key": {
-        "tag": "relevant",
-        "timeline_pos": 2
-      }
-    },
+      "question": "Who left the paw prints?",
+      "options": [
+        "The cat",
+        "The peon",
+        "The principal",
+        "Nobody"
+      ],
+      "answer": 1
+    }
+  ],
+  "twist_md": "New evidence: a photo.",
+  "twist_questions": [
     {
-      "code": "E02",
-      "type": "chat",
-      "title": "#pricing-dev channel",
-      "time_label": "00:40",
-      "content": {
-        "channel": "#pricing-dev",
-        "messages": [
-          {
-            "from": "Kabir (intern)",
-            "at": "00:40",
-            "text": "pushing pricing config v2.3 with the new discount multiplier"
-          },
-          {
-            "from": "Kabir (intern)",
-            "at": "00:41",
-            "text": "will check it in the morning"
-          }
-        ]
+      "code": "T1",
+      "clue": {
+        "label": "Photo",
+        "title": "Window",
+        "text": "The cat is asleep next to an empty plate."
       },
-      "key": {
-        "tag": "misleading",
-        "timeline_pos": null
-      }
-    },
-    {
-      "code": "E03",
-      "type": "db",
-      "title": "orders table (excerpt)",
-      "time_label": "01:15 – 01:40",
-      "content": {
-        "columns": [
-          "order_id",
-          "created_at",
-          "sku",
-          "price_inr",
-          "qty"
-        ],
-        "rows": [
-          [
-            "O-88121",
-            "01:15:22",
-            "TV-55-4K",
-            "149.00",
-            "3"
-          ],
-          [
-            "O-88122",
-            "01:15:40",
-            "LAPTOP-14",
-            "649.00",
-            "2"
-          ],
-          [
-            "O-88123",
-            "01:16:02",
-            "PHONE-X12",
-            "329.00",
-            "5"
-          ],
-          [
-            "O-91901",
-            "01:39:58",
-            "TV-55-4K",
-            "149.00",
-            "4"
-          ]
-        ]
-      },
-      "key": {
-        "tag": "relevant",
-        "timeline_pos": 3
-      }
-    },
-    {
-      "code": "E04",
-      "type": "log",
-      "title": "admin-portal access.log",
-      "time_label": "00:10",
-      "content": {
-        "lines": [
-          "00:10:44 LOGIN ok  user=ops.admin ip=49.36.x.x (new location)",
-          "00:11:02 VIEW  /reports/daily",
-          "00:14:30 LOGOUT user=ops.admin"
-        ]
-      },
-      "key": {
-        "tag": "misleading",
-        "timeline_pos": null
-      }
-    },
-    {
-      "code": "E05",
-      "type": "api",
-      "title": "GET supplier-feed /v3/prices",
-      "time_label": "00:30",
-      "content": {
-        "method": "GET",
-        "url": "https://supplier.example/v3/prices?page=1",
-        "status": 200,
-        "body": {
-          "version": "3.0",
-          "unit": "INR",
-          "items": [
-            {
-              "sku": "TV-55-4K",
-              "price": 14900
-            },
-            {
-              "sku": "LAPTOP-14",
-              "price": 64900
-            }
-          ]
-        }
-      },
-      "key": {
-        "tag": "relevant",
-        "timeline_pos": 1
-      }
-    },
-    {
-      "code": "E06",
-      "type": "ai_output",
-      "title": "Pricing assistant nightly summary",
-      "time_label": "01:20",
-      "content": {
-        "model": "pricing-assistant",
-        "prompt": "Summarise tonight's pricing run for the ops team.",
-        "output": "Tonight's run optimised 4,210 prices. Demand is up 900% versus the same hour last week. No anomalies detected."
-      },
-      "key": {
-        "tag": "relevant",
-        "timeline_pos": 4
-      }
-    },
-    {
-      "code": "E07",
-      "type": "code",
-      "title": "feed_parser.py",
-      "content": {
-        "language": "python",
-        "filename": "feed_parser.py",
-        "source": "def parse_item(item):\n    # supplier-feed v2 sends prices in paise\n    return {\n        'sku': item['sku'],\n        'price_inr': item['price'] / 100,\n    }\n"
-      },
-      "key": {
-        "tag": "relevant",
-        "timeline_pos": null
-      }
-    },
-    {
-      "code": "E08",
-      "type": "note",
-      "title": "Facilities notice",
-      "content": {
-        "body_md": "Office CCTV maintenance scheduled 00:00 – 02:00. Cameras on floors 2 and 3 will be offline."
-      },
-      "key": {
-        "tag": "irrelevant",
-        "timeline_pos": null
-      }
-    },
-    {
-      "code": "T01",
-      "type": "log",
-      "title": "ci-deploy.log",
-      "time_label": "00:40 – 00:56",
-      "is_twist": true,
-      "content": {
-        "lines": [
-          "00:40:12 DEPLOY pricing-config v2.3 started by kabir",
-          "00:52:40 TEST   pricing-config v2.3 FAILED (3/41)",
-          "00:56:03 ROLLBACK pricing-config v2.3 -> v2.2 complete",
-          "01:10:00 DEPLOY none"
-        ]
-      },
-      "key": {
-        "tag": "relevant",
-        "timeline_pos": null
-      }
+      "question": "What does the photo show?",
+      "options": [
+        "Nothing",
+        "The principal eating",
+        "The peon cleaning",
+        "The cat with the empty plate"
+      ],
+      "answer": 4
     }
   ],
   "answer": {
-    "root_cause_category": "Faulty deployment",
-    "root_cause_md": "Before the twist the intern's config push (E02) looks like the cause.",
-    "responsible": "Config deploy v2.3",
-    "post_twist_category": "Bad input data",
-    "post_twist_responsible": "Supplier feed integration: feed v3 switched prices from paise to rupees, feed_parser.py still divides by 100, and the -99% price alert was disabled"
+    "first_suspect": "The peon",
+    "culprit": "The cat",
+    "explanation": "The cat ate them."
   }
 }

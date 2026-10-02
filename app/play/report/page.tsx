@@ -6,34 +6,25 @@ import { getPlayContext } from "@/lib/play";
 
 export const dynamic = "force-dynamic";
 
-const empty: ReportFields = { what_happened: "", root_cause_category: null, root_cause_md: "", responsible: "", key_evidence: [], fix_md: "" };
+const empty: ReportFields = { culprit: null, explanation: "" };
 
 const time = (iso: string) => new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" });
 
 export default async function ReportPage() {
-  const { caseRow, evidence, reportWritable, hypothesisSubmitted, shownStage, submissions, versions, closedReason, event } = await getPlayContext();
+  const { caseRow, counts, reportWritable, initialSubmitted, shownStage, submissions, versions, closedReason, event } = await getPlayContext();
   if (!caseRow) return <EmptyState title="Case sealed">Your case file opens when the investigation starts.</EmptyState>;
 
   const current = submissions.get(shownStage);
   const submitted = !!current?.submitted_at;
   const autoLocked = !!current?.locked && !submitted;
-  const fields: ReportFields = current
-    ? {
-        what_happened: current.what_happened,
-        root_cause_category: current.root_cause_category,
-        root_cause_md: current.root_cause_md,
-        responsible: current.responsible,
-        key_evidence: current.key_evidence ?? [],
-        fix_md: current.fix_md,
-      }
-    : empty;
+  const fields: ReportFields = current ? { culprit: current.root_cause_category, explanation: current.what_happened } : empty;
   const initial = submissions.get("initial");
   const version = versions.get(`report_${shownStage}`) ?? 0;
   const next =
     shownStage === "initial"
-      ? hypothesisSubmitted
-        ? "Your Initial Conclusion is recorded. Keep tagging evidence and improving your timeline until the organisers lock round 1. After the twist you get an editable copy of this page for your Final Report."
-        : "Next: when the organisers release the twist, new evidence appears and you get an editable copy of this page for your Final Report."
+      ? initialSubmitted
+        ? "Your Initial Conclusion is recorded. You can still change your question answers until the organisers lock round 1. After the twist you give your Final Report here."
+        : "Next: when the organisers release the twist, new evidence appears and you give your Final Report here."
       : event?.phase === "closed" || event?.phase === "presentations" || event?.phase === "results"
         ? "Submissions are closed. Judging is in progress."
         : "Nothing more to do. Wait for the results.";
@@ -47,8 +38,8 @@ export default async function ReportPage() {
         description={
           reportWritable
             ? shownStage === "initial"
-              ? "Your best explanation before the twist. It saves automatically as you type. Press Submit when you are ready — then it is locked."
-              : "Draft saves automatically."
+              ? "Who do you think did it? It saves automatically. Press Submit when you are ready — then it is locked."
+              : "The new evidence is in. Give your final answer. It saves automatically; press Submit when you are ready."
             : closedReason
         }
       />
@@ -70,19 +61,18 @@ export default async function ReportPage() {
         key={`${shownStage}-${current?.locked ?? false}-${version}`}
         stage={shownStage}
         initial={fields}
-        rootCauseOptions={caseRow.root_cause_options}
-        evidenceCodes={evidence.map((e) => ({ code: e.code, title: e.title }))}
+        suspects={caseRow.root_cause_options}
         writable={reportWritable}
         version={version}
+        unanswered={shownStage === "final" ? counts.twist - counts.twistAnswered : counts.round1 - counts.round1Answered}
       />
 
       {shownStage === "final" && initial && (
         <details className="rounded-xl border border-line p-4">
           <summary className="cursor-pointer text-sm text-muted">Your Initial Conclusion (locked, for comparison)</summary>
           <dl className="mt-3 space-y-2 text-sm">
-            <div><dt className="text-muted">Root cause</dt><dd>{initial.root_cause_category ?? "—"}</dd></div>
-            <div><dt className="text-muted">Responsible</dt><dd>{initial.responsible || "—"}</dd></div>
-            <div><dt className="text-muted">What happened</dt><dd className="whitespace-pre-wrap break-words">{initial.what_happened || "—"}</dd></div>
+            <div><dt className="text-muted">Who did it</dt><dd>{initial.root_cause_category ?? "—"}</dd></div>
+            <div><dt className="text-muted">How you knew</dt><dd className="whitespace-pre-wrap break-words">{initial.what_happened || "—"}</dd></div>
           </dl>
         </details>
       )}

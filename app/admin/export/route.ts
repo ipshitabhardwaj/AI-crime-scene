@@ -30,9 +30,9 @@ export async function GET() {
 
   const header = [
     "rank", "team_code", "team", "institution", "members", "email", "phone", "case",
-    "auto_evidence_analysis", "auto_timeline", "auto_initial_hypothesis", "auto_root_cause", "auto_evidence_support", "auto_total",
-    "judge_responsible", "judge_reasoning", "judge_evidence", "judge_presentation", "judge_total", "total", "shortlist_order",
-    "initial_category", "initial_responsible", "initial_submitted_at", "final_category", "final_responsible", "final_what_happened", "final_root_cause", "final_fix", "final_key_evidence", "final_submitted_at",
+    "auto_questions", "auto_twist_questions", "auto_initial_conclusion", "auto_final_report", "auto_total",
+    "judge_culprit", "judge_reasoning", "judge_clues", "judge_presentation", "judge_total", "total", "shortlist_order",
+    "initial_culprit", "initial_explanation", "initial_submitted_at", "final_culprit", "final_explanation", "final_submitted_at",
   ];
   const lines = [header.join(",")];
   for (const r of board) {
@@ -42,9 +42,9 @@ export async function GET() {
     lines.push(
       [
         r.rank, r.team_code, r.name, r.institution, (t?.members ?? []).map((m) => m.name), t?.contact_email, t?.contact_phone, r.case_code,
-        r.auto?.tagging, r.auto?.timeline, r.auto?.hypothesis, r.auto?.root_cause, r.auto?.evidence_support, r.auto?.total,
+        r.auto?.tagging, r.auto?.timeline, r.auto?.hypothesis, r.auto?.root_cause, r.auto?.total,
         r.judge.responsible, r.judge.reasoning, r.judge.evidence_based, r.judge.presentation, r.judge.total, r.total, r.shortlist?.presentation_order,
-        i?.root_cause_category, i?.responsible, i?.submitted_at, f?.root_cause_category, f?.responsible, f?.what_happened, f?.root_cause_md, f?.fix_md, f?.key_evidence, f?.submitted_at,
+        i?.root_cause_category, i?.what_happened, i?.submitted_at, f?.root_cause_category, f?.what_happened, f?.submitted_at,
       ].map(esc).join(","),
     );
   }

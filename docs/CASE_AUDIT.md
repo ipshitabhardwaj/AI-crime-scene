@@ -1,35 +1,34 @@
-# Case audit (organisers only — contains answers)
+# Case audit
 
-This audit uses the automatic metrics from `npm run audit:cases` plus a human read-through of every evidence item. The only content change was one time label (CASE-D E01).
+The four event cases come from the organisers' "Crime Scene: The Unsolved Case" investigation files, adapted to this platform's format (short story → 8 one-clue multiple-choice questions → Initial Conclusion → twist with 3 more questions → Final Report). Re-run the checks with `npm run validate:cases` and `npm run audit:cases`.
 
-| Check | A · 2:17 AM | B · AI That Lied | C · Vanishing Data | D · Fake Signal |
-|---|---|---|---|---|
-| Evidence (twist) | 18 (2) | 18 (1) | 18 (2) | 17 (2) |
-| Relevant / misleading / irrelevant | 12 / 4 / 2 | 11 / 4 / 3 | 12 / 4 / 2 | 11 / 4 / 2 |
-| Noise ratio | 33% | 39% | 33% | 35% |
-| Time labels / key timeline in time order | 15 of 18 / ✓ | 13 of 18 / ✓ | 12 of 18 / ✓ | 12 of 17 / **✗ → fixed** |
-| Source labels (every item names its system, channel or sender) | ✓ | ✓ | ✓ | ✓ |
-| Misleading clues support the trap | E02, E06, E12, E13 | E02, E03, E13, E16 | E03, E04, E05, E13 | E02, E06, E07, E15 |
-| Answer leakage before the twist | none | none | none | "load test" in E10 and E11 (intended clues) |
-| Root cause inferable before the twist | yes: E03 + E04 + E08 + E14 | yes: E04 + E06 + E08 + E09 + E12 | yes: E02/E09 + E07 + E08 + E16 | yes: E03 + E04 + E05 + E10 + E11 + E12 |
-| Pre-twist relevant items to cite (4 needed) | 10 | 10 | 10 | 9 |
-| Twist confirms or gives away? | Gives it away (T01 prerequisites, T02 "02:17 was tonight") | Nearly (T01 format change) | Gives it away (T01 diff) | Gives it away (T02 "falls back to prod") |
-| Solvable from ONE giveaway clue before the twist? | No (needs 3–4 items) | No | No | No |
+| Case | Title | Story points to | Really did it |
+|---|---|---|---|
+| A | The Locked Room | Daniel, the heir | Sarah Menon, the business partner |
+| B | The Leaked Question Paper | Rohan, the teaching assistant | Gopal Bhatia, the clerk |
+| C | The Museum Heist | Joseph, the night guard | Rekha Bhandari, the jewellery designer |
+| D | The Missing Person | Dev, the ex | Kavya Nair, the understudy |
 
-## Fixed
+## What was changed from the source files
 
-- **CASE-D E01 time label** changed from `03:12` to `03:12:04` (the log line itself says 03:12:04). Labels sort as text, so `03:12` came before E03's `03:12:03`. A team ordering its timeline by the labels would have placed E01 and E03 the wrong way round and lost ordering points.
-- **Ambiguous root-cause categories.** Teams now see a one-line definition of every category and the rule "choose the most specific category that describes the direct cause" (`lib/root-causes.ts`). These definitions separate the pairs that caused the most doubt:
-  - A: "human error during an approved change" vs "buggy code".
-  - B: "bad input data" vs "third-party" vs "buggy code".
-  - C: "buggy code release" vs "human error".
-  - D: "test/staging hitting production" vs "human error".
-  - ASSUMPTION — can be changed later: the wording of the definitions.
-- **Relevant timestamped events outside the key timeline** (A T01/T02, B E04/E12, C T02, D E10/T02) are now **neutral** in timeline scoring instead of costing points. This is a scoring change, not a case change.
+- **Format.** The source used scene hotspots, mixed question types (multi-select, short answer, timeline ordering), a 40-point reconstruction rubric, hints and a time bonus. This platform has none of those, so every graded point became a four-option question with one clue, and the reconstruction became the short report that judges read. Hints, hotspots and the time bonus are not used.
+- **Twist.** The source showed all evidence at once. Here the most decisive items are held back for the twist: A: gate log, spare key, diary. B: visitor register and tiffin, the drawer notice, whose mug it is. C: the curator's and Mr. Anil's statements. D: Kavya's 9:08 message, the missing B-07 key and new padlock, her script.
+- **Case A, cinema ticket.** The source had the film ending at 11:50 PM but the gate log showing Daniel coming home at 11:15 PM. The film now ends at 11:00 PM so the two agree.
+- **Case A, sugar.** The source's hint asks "who takes sugar?" but no evidence said. Meera's statement now adds: "Sir drinks his black. Sarah madam always takes sugar."
+- **Case A, shoe print.** The muddy size-7 print (a red herring with no explanation in the source) is left out.
+- **Case C, cleaner's log.** "Necklace sparkling nicely" did not prove the real necklace was there, so the log now adds "The little lion is shining."
+- **Case C, night.** A line was added that the case's lock sensor shows it was not opened that night, so the camera gap can be ruled out from evidence.
+- **Case D, notebook.** Added that Ananya writes "definitely" correctly, twice, so the spelling comparison is checkable.
+- **Case D, director.** Added his line that losing Ananya hurts his own show, to give a reason beyond leaving at 9:15.
 
-## Not changed (flagged for your team)
+## What was checked
 
-- **The twist states the answer in A, C and D.** I did not rewrite the twist items. Instead, the scoring now makes copying the twist worth little: no hypothesis points and no evidence-support points for twist-only citations. A correct hypothesis before the twist is worth 6 points, and citing pre-twist evidence is worth 6 more. A team that only copies the twist gets neither. If you want the twist to be only a hint, T02 in A and T02 in D are the lines to soften.
-- **Same-session items tagged differently in C** (E03 excerpt = misleading, T02 full session = relevant). This is consistent with the tag rule, because the excerpt supports the wrong story and the full session disproves it. The cost is at most one tag.
-- **D E15** ("other zones, same minute") is keyed *misleading*, but some teams will call it *irrelevant*. Under the new scoring that costs about 0.6 points.
-- **The cross-case pattern:** the briefing pushes a wrong hypothesis and an AI summary is always misleading. Teams that compare cases can learn it. This is a physical-proctoring matter.
+- Same amount of work in every case: 8 questions + 3 twist questions, 3 suspects, a story of 120–155 words.
+- Each question can be answered from its own clue.
+- Correct answers are spread over A–D (2–3 each), and the correct option is not the longest more often than chance would explain (ties in length are counted as "longest" by the audit).
+- Every wrong suspect is cleared by at least one clue.
+
+## Known limits
+
+- Case A involves a death. It is described without detail, but tell the faculty in charge if that matters for your event.
+- The cases are easy by design; ranking will lean on the Initial Conclusion points, the judges and submission time.

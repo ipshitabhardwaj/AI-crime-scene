@@ -38,14 +38,14 @@ A one-page printable version is in `docs/organizer-checklist.pdf`. The phase rul
 
 - [ ] Teams log in, **staggered** as they check in (this keeps the login burst small). **Live status** marks teams without a login or case in red.
 - [ ] Brief the teams:
-  - One person edits the timeline, one the report.
-  - The **How to play** button explains everything; each tag shows its meaning next to it.
-  - **Submit your Initial Conclusion before the lock.** It can't be changed afterwards, but you keep tagging and building the timeline until the lock.
-  - Key evidence you cite, from before the twist, counts.
+  - One person taps the answers, one writes the report. Everyone reads the clues.
+  - The **How to play** button explains everything. There is no negative marking, so answer every question.
+  - **Submit your Initial Conclusion before the lock.** It can't be changed afterwards, but you can still change your question answers until the lock.
+  - In the report, say who did it and which clues prove it. Judges read it.
 
 ## T-10 min
 
-- [ ] Step 1 timer checked (default 75 min).
+- [ ] Step 1 timer checked (default 25 min; change the number in the box if you want longer).
 - [ ] Only the Driver clicks phase buttons.
 
 ## START
@@ -55,7 +55,7 @@ A one-page printable version is in `docs/organizer-checklist.pdf`. The phase rul
 
 ## +15 min
 
-- [ ] **Live status**: every team shows tags > 0 and a recent "Last activity". Walk over to teams showing nothing.
+- [ ] **Live status**: every team shows Answered > 0 and a recent "Last activity". Walk over to teams showing nothing.
 - [ ] A laptop died or a team lost time → **this phase +5** in that team's row on Live status. It applies to this phase only. The team's open pages update by themselves within ~15 s and show "+5 min extra time".
 - [ ] Only use **whole event +5** when a team should get extra time in every remaining phase.
 - [ ] Everyone needs more time → **Extend deadline for everyone**.
@@ -63,16 +63,16 @@ A one-page printable version is in `docs/organizer-checklist.pdf`. The phase rul
 ## LOCK (end of investigation)
 
 - [ ] When the timer hits 0, writing stops automatically.
-- [ ] **2 · Lock initial stage** (tick *I'm sure*). Every Initial Conclusion, tag and initial timeline is locked. Unsubmitted drafts become "auto-locked" and are still scored.
+- [ ] **2 · Lock initial stage** (tick *I'm sure*). Every Initial Conclusion and every round-1 answer is locked. Unsubmitted drafts become "auto-locked" and are still scored.
 
 ## TWIST
 
-- [ ] **3 · Release the twist** (tick *I'm sure*, 20 min).
-- [ ] The projector shows NEW EVIDENCE RELEASED. Teams see the new items marked NEW, plus an editable copy of their timeline and report.
+- [ ] **3 · Release the twist** (tick *I'm sure*, 10 min).
+- [ ] The projector shows NEW EVIDENCE RELEASED. Teams see the new clues with 3 new questions, then write their Final Report (it starts as a copy of their Initial Conclusion).
 
 ## FINAL SUBMISSION
 
-- [ ] Optional: **4 · Final report** (new 20 min timer). Same rights as the twist phase.
+- [ ] Optional: **4 · Final report** (new 10 min timer). Same rights as the twist phase.
 - [ ] Remind teams: press **Submit**, then look for the green "Submitted at".
 
 ## CLOSE
@@ -117,7 +117,7 @@ A one-page printable version is in `docs/organizer-checklist.pdf`. The phase rul
 | --- | --- |
 | "Did my submission go through?" | Their Report page shows a green **"Submitted at HH:MM — received and locked"**, and Live status shows *submitted*. If they saw "couldn't confirm", pressing Submit again is safe (it never duplicates). |
 | Submitted by mistake | Live status → *unlock* next to their status. This works only while that phase is running. Within ~15 s their pages show "Editing reopened"; they must submit again. |
-| "A teammate changed this on another device" | Two laptops edited the same timeline or report. Nothing was overwritten: they copy their text, click *load the latest version*, and one person edits. (Tags: the last click wins.) |
+| "A teammate changed this on another device" | Two laptops edited the report at the same time. Nothing was overwritten: they copy their text, click *load the latest version*, and one person edits. (Tags: the last click wins.) |
 | "No connection" on a team laptop | Edits are kept and saved automatically when Wi-Fi returns. Don't close the tab. |
 | Team can't log in: "Too many wrong attempts" | Wait 5 min, or Teams → More → Reset PIN (the new PIN is shown at the top). |
 | "The login server is busy" | Supabase rate limit. Ask teams to wait 30 s and log in one device at a time. The owner raises the limit in Supabase → Authentication → Rate Limits. |

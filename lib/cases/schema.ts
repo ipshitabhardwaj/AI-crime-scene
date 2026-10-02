@@ -1,54 +1,49 @@
 import { z } from "zod";
 
-/** Shape of one case file in /cases/*.json. Validated before loading. */
-export const evidenceTypes = ["log", "chat", "email", "db", "api", "code", "screenshot", "ai_output", "note"] as const;
-export const evidenceTags = ["relevant", "irrelevant", "misleading"] as const;
-
-export const EvidenceSchema = z.object({
-  code: z.string().min(1),                       // E01, T01 ...
-  type: z.enum(evidenceTypes),
-  title: z.string().min(1),
-  time_label: z.string().optional(),             // in-story time shown to teams
-  is_twist: z.boolean().default(false),
-  content: z.record(z.string(), z.unknown()),     // shape depends on type
-  key: z.object({
-    tag: z.enum(evidenceTags),
-    timeline_pos: z.number().int().positive().nullable(),
+/**
+ * Shape of one case file in /cases/*.json. Validated before loading.
+ *
+ * A case is a short story, a list of suspects, multiple-choice questions
+ * (each shows one clue) and a twist with a few more questions.
+ */
+const QuestionSchema = z.object({
+  code: z.string().min(1), // Q1, Q2 … (round 1) or T1, T2 … (twist)
+  clue: z.object({
+    label: z.string().min(1), // kind of clue, e.g. "CCTV", "WhatsApp group"
+    title: z.string().min(1),
+    text: z.string().min(1),
   }),
+  question: z.string().min(1),
+  options: z.array(z.string().min(1)).length(4),
+  answer: z.number().int().min(1).max(4), // 1 = first option
 });
 
 export const CaseFileSchema = z
   .object({
     code: z.string().min(1),
     title: z.string().min(1),
-    briefing_md: z.string(),
-    root_cause_options: z.array(z.string().min(1)).min(2),
-    twist_md: z.string(),
-    evidence: z.array(EvidenceSchema).min(1),
+    briefing_md: z.string().min(1),
+    suspects: z.array(z.string().min(1)).min(2).max(6),
+    questions: z.array(QuestionSchema).min(1),
+    twist_md: z.string().min(1),
+    twist_questions: z.array(QuestionSchema).min(1),
     answer: z.object({
-      root_cause_category: z.string(),
-      root_cause_md: z.string().default(""),
-      responsible: z.string().default(""),
-      post_twist_category: z.string(),
-      post_twist_responsible: z.string().default(""),
+      /** who the story points to at first (the wrong answer most teams start with) */
+      first_suspect: z.string(),
+      /** who really did it (scored) */
+      culprit: z.string(),
+      explanation: z.string().min(1),
     }),
   })
   .superRefine((c, ctx) => {
-    const codes = c.evidence.map((e) => e.code);
+    const codes = [...c.questions, ...c.twist_questions].map((q) => q.code);
     const dup = codes.find((code, i) => codes.indexOf(code) !== i);
-    if (dup) ctx.addIssue({ code: "custom", message: `Duplicate evidence code ${dup}` });
-
-    for (const k of ["root_cause_category", "post_twist_category"] as const) {
-      if (!c.root_cause_options.includes(c.answer[k])) {
-        ctx.addIssue({ code: "custom", message: `answer.${k} "${c.answer[k]}" is not in root_cause_options` });
-      }
+    if (dup) ctx.addIssue({ code: "custom", message: `Duplicate question code ${dup}` });
+    for (const k of ["first_suspect", "culprit"] as const) {
+      if (!c.suspects.includes(c.answer[k])) ctx.addIssue({ code: "custom", message: `answer.${k} "${c.answer[k]}" is not in suspects` });
     }
-
-    const positions = c.evidence.map((e) => e.key.timeline_pos).filter((p): p is number => p !== null);
-    const sorted = [...positions].sort((a, b) => a - b);
-    if (sorted.some((p, i) => p !== i + 1)) {
-      ctx.addIssue({ code: "custom", message: `timeline_pos values must be 1..n with no gaps (got ${sorted.join(", ")})` });
-    }
+    if (c.answer.first_suspect === c.answer.culprit) ctx.addIssue({ code: "custom", message: "first_suspect and culprit must differ" });
   });
 
 export type CaseFile = z.infer<typeof CaseFileSchema>;
+export type CaseQuestion = z.infer<typeof QuestionSchema>;

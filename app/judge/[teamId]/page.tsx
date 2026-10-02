@@ -2,15 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { saveJudgeScores } from "@/app/actions/judge";
 import { requireRole } from "@/lib/auth";
-import { TAG_STYLES } from "@/lib/phase";
 import { getEvent } from "@/lib/event";
-import { JUDGE_CRITERIA } from "@/lib/scoring";
+import { AUTO_PARTS, JUDGE_CRITERIA, LETTERS, letterToChoice } from "@/lib/scoring";
 import { JUDGE_SCORE_PHASES, JUDGE_VIEW_PHASES } from "@/lib/state-machine";
 import { createClient } from "@/lib/supabase/server";
-import type { EvidenceRow, Submission } from "@/lib/types";
+import { toQuestion, type EvidenceRow, type Submission } from "@/lib/types";
 import { ui } from "@/lib/ui";
 import { Field, Pill } from "@/components/ui";
-import { AUTO_PARTS } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -33,13 +31,13 @@ export default async function JudgeTeamPage({ params }: { params: Promise<{ team
   const { data: team } = await supabase.from("teams").select("id, team_code, name, institution, members, case_id").eq("id", teamId).maybeSingle();
   if (!team) notFound();
 
-  const [{ data: evidence }, { data: keys }, { data: answer }, { data: subs }, { data: tl }, { data: auto }, { data: mine }, { data: sl }, { data: myTeams }] =
+  const [{ data: evidence }, { data: keys }, { data: answer }, { data: subs }, { data: given }, { data: auto }, { data: mine }, { data: sl }, { data: myTeams }] =
     await Promise.all([
-      supabase.from("evidence").select("*").eq("case_id", team.case_id).order("sort_order").returns<EvidenceRow[]>(),
-      supabase.from("answer_evidence").select("evidence_id, tag, timeline_pos"),
+      supabase.from("evidence").select("id, case_id, code, title, content, is_twist, sort_order").eq("case_id", team.case_id).order("sort_order").returns<EvidenceRow[]>(),
+      supabase.from("answer_evidence").select("evidence_id, timeline_pos"),
       supabase.from("answer_key").select("*").eq("case_id", team.case_id).maybeSingle(),
       supabase.from("submissions").select("*").eq("team_id", teamId).returns<Submission[]>(),
-      supabase.from("timeline_entries").select("stage, position, evidence_id, time_label, description").eq("team_id", teamId).order("position"),
+      supabase.from("evidence_tags").select("evidence_id, note").eq("team_id", teamId),
       supabase.from("auto_scores").select("*").eq("team_id", teamId).maybeSingle(),
       supabase.from("judge_scores").select("criterion, score, comment").eq("judge_id", userId).eq("team_id", teamId),
       supabase.from("shortlist").select("presentation_order").eq("team_id", teamId).maybeSingle(),
@@ -50,12 +48,11 @@ export default async function JudgeTeamPage({ params }: { params: Promise<{ team
         .returns<{ team_id: string; teams: { team_code: string; shortlist: { presentation_order: number | null } | null } | null }[]>(),
     ]);
 
-  const ev = evidence ?? [];
-  const keyOf = new Map((keys ?? []).map((k) => [k.evidence_id, k]));
-  const codeOf = new Map(ev.map((e) => [e.id, e.code]));
+  const questions = (evidence ?? []).map(toQuestion);
+  const keyOf = new Map((keys ?? []).map((k) => [k.evidence_id, k.timeline_pos as number | null]));
+  const givenOf = new Map((given ?? []).map((g) => [g.evidence_id, letterToChoice(g.note)]));
   const initial = (subs ?? []).find((s) => s.stage === "initial");
   const final = (subs ?? []).find((s) => s.stage === "final");
-  const finalTags = final?.tags_snapshot ?? initial?.tags_snapshot ?? {};
   const myScore = new Map((mine ?? []).map((m) => [m.criterion, m]));
   const criteria = JUDGE_CRITERIA.filter((c) => c.id !== "presentation" || sl);
   const order = (myTeams ?? [])
@@ -68,9 +65,8 @@ export default async function JudgeTeamPage({ params }: { params: Promise<{ team
 
 
   const nav = "rounded-md border border-line px-3 py-1.5 text-sm text-muted hover:border-accent hover:text-text";
-  const timeline = (tl ?? []).filter((x) => x.stage === (tl?.some((y) => y.stage === "final") ? "final" : "initial"));
-  const tagRows = ev.map((e) => ({ e, k: keyOf.get(e.id), t: (finalTags as Record<string, string>)[e.code] }));
-  const tagRight = tagRows.filter((r) => r.k && r.t === r.k.tag).length;
+  const rows = questions.map((q) => ({ q, correct: keyOf.get(q.id) ?? null, picked: givenOf.get(q.id) ?? null }));
+  const right = rows.filter((r) => r.picked !== null && r.picked === r.correct).length;
 
   return (
     <div className="space-y-6">
@@ -98,53 +94,31 @@ export default async function JudgeTeamPage({ params }: { params: Promise<{ team
           {answer && (
             <section className="rounded-xl border border-accent/50 bg-accent/5 p-4 text-sm">
               <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-accent">Answer key</p>
-              <p className="mt-1">
-                <b>{answer.post_twist_category}</b> — {answer.post_twist_responsible}
+              <p className="mt-1 text-base">
+                Who did it: <b>{answer.post_twist_category}</b>
               </p>
-              <p className="mt-2 text-xs text-muted">
-                Before the twist the evidence pointed to: {answer.root_cause_category} — {answer.responsible}
-              </p>
+              <p className="mt-1">{answer.root_cause_md}</p>
+              <p className="mt-2 text-xs text-muted">The story points to {answer.root_cause_category} at first. Naming that person is the common wrong answer.</p>
             </section>
           )}
 
           <section className="grid gap-4 xl:grid-cols-2">
             <Report s={initial} title="Initial Conclusion (before the twist)" />
-            <Report s={final} title="Final report (after twist)" />
-          </section>
-
-          <section className={ui.card}>
-            <h3 className="mb-3 font-semibold">Final timeline <span className="text-sm font-normal text-muted">({timeline.length} steps)</span></h3>
-            <ol className="space-y-1 text-sm">
-              {timeline.map((x, i) => {
-                const k = x.evidence_id ? keyOf.get(x.evidence_id) : undefined;
-                return (
-                  <li key={i} className="flex gap-2 border-b border-line/60 py-1 last:border-0">
-                    <span className="w-5 text-right text-muted">{x.position}.</span>
-                    <span className="w-16 font-mono text-muted">{x.time_label}</span>
-                    <span className="w-10 font-mono text-accent">{x.evidence_id ? codeOf.get(x.evidence_id) : ""}</span>
-                    <span className="flex-1">{x.description}</span>
-                    <span className={`text-xs ${k?.timeline_pos ? "text-ok" : k && k.tag !== "relevant" ? "text-danger" : "text-muted"}`}>
-                      {k?.timeline_pos ? `key #${k.timeline_pos}` : k && k.tag !== "relevant" ? k.tag : "not in key"}
-                    </span>
-                  </li>
-                );
-              })}
-              {timeline.length === 0 && <li className="text-muted">No timeline.</li>}
-            </ol>
+            <Report s={final} title="Final Report (after the twist)" />
           </section>
 
           <details className={ui.card}>
             <summary className="cursor-pointer font-semibold">
-              Evidence tags vs key <span className="text-sm font-normal text-muted">({tagRight}/{tagRows.length} match)</span>
+              Question answers <span className="text-sm font-normal text-muted">({right}/{rows.length} correct, scored automatically)</span>
             </summary>
             <table className="mt-3 w-full text-sm">
               <tbody>
-                {tagRows.map(({ e, k, t }) => (
-                  <tr key={e.id} className="border-t border-line">
-                    <td className="py-1 pr-2 font-mono text-accent">{e.code}</td>
-                    <td className="py-1 pr-2">{e.title}</td>
-                    <td className="py-1 pr-2">{t ? <span className={`rounded border px-1.5 text-xs ${TAG_STYLES[t].cls}`}>{t}</span> : <span className="text-muted">—</span>}</td>
-                    <td className="py-1">{k && (t === k.tag ? <span className="text-ok">✓</span> : <span className="text-danger" title={`key: ${k.tag}`}>✗ {k.tag}</span>)}</td>
+                {rows.map(({ q, correct, picked }) => (
+                  <tr key={q.id} className="border-t border-line align-top">
+                    <td className="py-1.5 pr-2 font-mono text-accent">{q.code}</td>
+                    <td className="py-1.5 pr-2">{q.question}</td>
+                    <td className="whitespace-nowrap py-1.5 pr-2 font-mono">{picked ? LETTERS[picked - 1] : <span className="text-muted">—</span>}</td>
+                    <td className="whitespace-nowrap py-1.5">{picked !== null && picked === correct ? <span className="text-ok">✓</span> : <span className="text-danger">✗ key {correct ? LETTERS[correct - 1] : "?"}</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -228,14 +202,10 @@ function Report({ s, title }: { s?: Submission; title: string }) {
         <p className="mt-2 text-sm text-muted">Nothing submitted.</p>
       ) : (
         <dl className="mt-3 space-y-3">
-          <Field label="Root cause">
+          <Field label="Who did it">
             <b>{s.root_cause_category}</b>
           </Field>
-          <Field label="Responsible">{s.responsible}</Field>
-          <Field label="What happened">{s.what_happened}</Field>
-          <Field label="Root cause explained">{s.root_cause_md}</Field>
-          <Field label="Key evidence" mono>{s.key_evidence?.join(", ")}</Field>
-          <Field label="Fix / prevention">{s.fix_md}</Field>
+          <Field label="How they know">{s.what_happened}</Field>
         </dl>
       )}
     </div>

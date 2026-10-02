@@ -7,12 +7,14 @@ import { getPlayContext } from "@/lib/play";
 export default async function TeamFrame() {
   const ctx = await getPlayContext();
   if (!ctx.caseRow) return null;
-  const tagged = ctx.evidence.filter((e) => ctx.tags.get(e.id)?.tag).length;
   const sub = ctx.submissions.get(ctx.shownStage);
-  const steps = ctx.timelineCount(ctx.shownStage);
+  const c = ctx.counts;
+  const twistOut = ctx.shownStage === "final" && c.twist > 0;
+  const done = twistOut ? c.twistAnswered : c.round1Answered;
+  const total = twistOut ? c.twist : c.round1;
   const badges: NavBadges = {
-    evidence: `${tagged}/${ctx.evidence.length} tagged`,
-    timeline: `${steps} step${steps === 1 ? "" : "s"}`,
+    questions: `${done}/${total} ${twistOut ? "new " : ""}answered`,
+    questionsTone: done === total && total > 0 ? "ok" : "muted",
     report: sub?.submitted_at ? "submitted ✓" : sub?.locked ? "auto-locked" : "not submitted",
     reportTone: sub?.submitted_at ? "ok" : sub?.locked ? "accent" : "muted",
   };

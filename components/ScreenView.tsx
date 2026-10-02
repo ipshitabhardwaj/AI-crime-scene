@@ -71,7 +71,7 @@ export default function ScreenView({ initial, board }: { initial: EventRow | nul
           return (
             <li
               key={p.id}
-              className={`rounded-full border px-4 py-1.5 font-mono text-sm ${st === "now" ? "border-accent bg-accent text-ink" : st === "done" ? "border-line text-muted line-through" : "border-line text-muted"}`}
+              className={`rounded-full border px-4 py-1.5 font-mono text-sm ${st === "now" ? "border-accent bg-accent text-white" : st === "done" ? "border-line text-muted line-through" : "border-line text-muted"}`}
             >
               {p.label}
             </li>

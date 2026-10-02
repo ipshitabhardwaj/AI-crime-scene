@@ -33,7 +33,7 @@ export default async function ResultsPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <div className={ui.card}>
           <h2 className="flex items-center justify-between font-semibold">1 · Auto-score {status(scored > 0, true)}</h2>
-          <p className="mt-1 text-sm text-muted">Evidence analysis 15 · timeline 15 · Initial Conclusion 6 · root cause 8 · evidence support 6 (50 pts). Re-run any time.</p>
+          <p className="mt-1 text-sm text-muted">Questions 24 · twist questions 12 · Initial Conclusion 6 · Final Report 8 (50 pts). Re-run any time.</p>
           <form action={runAutoScoring} className="mt-3 space-y-2 text-sm">
             {!closed && (
               <label className="flex items-center gap-2 text-muted"><input type="checkbox" name="confirm" /> score anyway (submissions still open)</label>
@@ -77,9 +77,8 @@ export default async function ResultsPage() {
             <thead className="text-muted">
               <tr>
                 <th className={ui.th}>#</th><th className={ui.th}>Team</th><th className={ui.th}>Case</th>
-                <th className={ui.th} title="Tagging /15">Tag</th><th className={ui.th} title="Timeline /15">TL</th>
-                <th className={ui.th} title="Initial Conclusion /6">IC</th><th className={ui.th} title="Root cause /8">RC</th>
-                <th className={ui.th} title="Evidence support /6">Sup</th>
+                <th className={ui.th} title="Round-1 questions /24">Q</th><th className={ui.th} title="Twist questions /12">Twist</th>
+                <th className={ui.th} title="Initial Conclusion named the culprit /6">IC</th><th className={ui.th} title="Final Report named the culprit /8">Final</th>
                 <th className={ui.th}>Auto /50</th><th className={ui.th}>Judges /50</th><th className={ui.th}>Judged</th>
                 <th className={ui.th}>Total</th><th className={ui.th}>Shortlist</th>
               </tr>
@@ -94,9 +93,8 @@ export default async function ResultsPage() {
                   <td className={ui.td}>{r.auto?.timeline ?? "—"}</td>
                   <td className={ui.td}>{r.auto?.hypothesis ?? "—"}</td>
                   <td className={ui.td}>{r.auto?.root_cause ?? "—"}</td>
-                  <td className={ui.td}>{r.auto?.evidence_support ?? "—"}</td>
                   <td className={`${ui.td} font-semibold`}>{r.auto?.total ?? "—"}</td>
-                  <td className={ui.td} title={`responsible ${r.judge.responsible} · reasoning ${r.judge.reasoning} · evidence ${r.judge.evidence_based} · presentation ${r.judge.presentation}`}>{r.judge.total}</td>
+                  <td className={ui.td} title={`culprit ${r.judge.responsible} · reasoning ${r.judge.reasoning} · clues ${r.judge.evidence_based} · presentation ${r.judge.presentation}`}>{r.judge.total}</td>
                   <td className={`${ui.td} text-muted`}>{r.judgeCount}/{r.judgesAssigned}</td>
                   <td className={`${ui.td} text-lg font-bold`}>{r.total}</td>
                   <td className={ui.td}>{r.shortlist ? `#${r.shortlist.presentation_order}` : ""}</td>

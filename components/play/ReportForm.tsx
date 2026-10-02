@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveReport, submitReport, type ReportFields } from "@/app/actions/team";
-import { ROOT_CAUSE_HELP, ROOT_CAUSE_RULE } from "@/lib/root-causes";
 import type { Stage } from "@/lib/types";
 import { ConflictBanner, SaveIndicator, useAutosave } from "./useAutosave";
 
@@ -14,20 +13,21 @@ type SubmitState =
   | { kind: "unknown" } // network failed: we don't know if it arrived
   | { kind: "error"; message: string };
 
+/** The short report: pick the culprit, explain why, submit. */
 export default function ReportForm({
   stage,
   initial,
-  rootCauseOptions,
-  evidenceCodes,
+  suspects,
   writable,
   version,
+  unanswered,
 }: {
   stage: Stage;
   initial: ReportFields;
-  rootCauseOptions: string[];
-  evidenceCodes: { code: string; title: string }[];
+  suspects: string[];
   writable: boolean;
   version: number;
+  unanswered: number;
 }) {
   const [f, setF] = useState<ReportFields>(initial);
   const versionRef = useRef(version);
@@ -42,19 +42,9 @@ export default function ReportForm({
   );
   const [submit, setSubmit] = useState<SubmitState>({ kind: "idle" });
   const router = useRouter();
+  const name = stage === "initial" ? "Initial Conclusion" : "Final Report";
 
-  const set = <K extends keyof ReportFields>(k: K, v: ReportFields[K]) => setF((x) => ({ ...x, [k]: v }));
-  const toggleCode = (code: string) =>
-    set("key_evidence", f.key_evidence.includes(code) ? f.key_evidence.filter((c) => c !== code) : [...f.key_evidence, code]);
-
-  const area = "w-full rounded-md border border-line bg-ink p-3 text-sm focus:border-accent focus:outline-none disabled:opacity-60";
-  const label = "mb-1 block text-sm font-medium";
-  const hint = "mb-2 block text-xs text-muted";
-  const missing = [
-    !f.what_happened.trim() && "what happened",
-    !f.root_cause_category && "type of cause",
-    !f.responsible.trim() && "who or what caused it",
-  ].filter(Boolean) as string[];
+  const missing = [!f.culprit && "who did it", !f.explanation.trim() && "your explanation"].filter(Boolean) as string[];
 
   const doSubmit = async () => {
     setSubmit({ kind: "sending" });
@@ -65,172 +55,110 @@ export default function ReportForm({
         router.refresh();
         return; // page re-renders as "Submitted"
       }
-      setSubmit({ kind: "error", message: r.code === "CONFLICT" ? "A teammate changed the report on another device. Reload, check it, then submit." : r.error });
+      setSubmit({ kind: "error", message: r.code === "CONFLICT" ? "A teammate changed this on another device. Reload, check it, then submit." : r.error });
     } catch {
       setSubmit({ kind: "unknown" });
     }
   };
 
-  const checks = [
-    { ok: !!f.what_happened.trim(), label: "What happened" },
-    { ok: !!f.root_cause_category, label: "Type of cause" },
-    { ok: !!f.responsible.trim(), label: "Who or what caused it" },
-    { ok: !!f.root_cause_md.trim(), label: "Why it happened" },
-    { ok: f.key_evidence.length >= 3, label: "3+ pieces of evidence" },
-  ];
-  const n = (i: number, title: string) => (
-    <span className="mb-2 flex items-center gap-2">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-line font-mono text-xs text-muted">{i}</span>
-      <span className="font-semibold">{title}</span>
-    </span>
-  );
-  const box = "rounded-xl border border-line bg-panel p-4";
-
+  const box = "rounded-xl border border-line bg-panel p-5";
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-      <div className="min-w-0 space-y-4">
-        {state === "conflict" && <ConflictBanner onReload={() => router.refresh()} />}
+    <div className="space-y-4">
+      {state === "conflict" && <ConflictBanner onReload={() => router.refresh()} />}
 
-        <div className={box}>
-          {n(1, "What happened")}
-          <label className="block">
-            <span className={label}>What happened?</span>
-            <span className={hint}>Tell the story in a few sentences: what went wrong, and in what order?</span>
-            <textarea rows={5} maxLength={5000} className={area} value={f.what_happened} disabled={!writable} onChange={(e) => set("what_happened", e.target.value)} />
-          </label>
-        </div>
-
-        <div className={box}>
-          {n(2, "The cause")}
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="block">
-              <span className={label}>Type of cause</span>
-              <span className={hint}>Pick the closest one (see “What do these mean?”).</span>
-              <select aria-label="Type of cause" className={area} value={f.root_cause_category ?? ""} disabled={!writable} onChange={(e) => set("root_cause_category", e.target.value || null)}>
-                <option value="">— choose —</option>
-                {rootCauseOptions.map((o) => <option key={o} value={o}>{o}</option>)}
-              </select>
-              <details className="mt-2 text-xs text-muted">
-                <summary className="cursor-pointer">What do these mean?</summary>
-                <p className="mt-1">{ROOT_CAUSE_RULE}</p>
-                <dl className="mt-1 space-y-1">
-                  {rootCauseOptions.map((o) => (
-                    <div key={o}>
-                      <dt className="font-semibold text-text">{o}</dt>
-                      <dd>{ROOT_CAUSE_HELP[o] ?? ""}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </details>
-            </label>
-            <label className="block">
-              <span className={label}>Who or what caused it?</span>
-              <span className={hint}>A person, a team, a program or a setting. Be as specific as the evidence allows.</span>
-              <input name="responsible" maxLength={500} className={area} value={f.responsible} disabled={!writable} onChange={(e) => set("responsible", e.target.value)} />
-            </label>
-          </div>
-          <label className="mt-4 block">
-            <span className={label}>Why did it happen?</span>
-            <span className={hint}>Connect the clues. Mention the evidence codes you rely on (like E03).</span>
-            <textarea rows={5} maxLength={5000} className={area} value={f.root_cause_md} disabled={!writable} onChange={(e) => set("root_cause_md", e.target.value)} />
-          </label>
-        </div>
-
-        <fieldset className={box}>
-          <legend className="sr-only">Evidence that proves it</legend>
-          {n(3, "Evidence that proves it")}
-          <span className={hint}>Tick the items that prove your answer. Evidence from before the twist counts most; misleading or irrelevant items count against you.</span>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {evidenceCodes.map((e) => {
-              const on = f.key_evidence.includes(e.code);
-              return (
-                <button
-                  key={e.code}
-                  type="button"
-                  title={e.title}
-                  aria-pressed={on}
-                  disabled={!writable}
-                  onClick={() => toggleCode(e.code)}
-                  aria-label={`${e.code} — ${e.title}`}
-                  className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-left text-sm disabled:opacity-60 ${on ? "border-accent bg-accent/15 text-text" : "border-line text-muted hover:text-text"}`}
-                >
-                  <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] ${on ? "border-accent bg-accent text-ink" : "border-line"}`}>{on ? "✓" : ""}</span>
-                  <span>
-                    <b className="font-mono text-accent">{e.code}</b> — {e.title}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-2 text-xs text-muted">{f.key_evidence.length} selected{f.key_evidence.length ? `: ${f.key_evidence.join(", ")}` : ""}</p>
-        </fieldset>
-
-        <div className={box}>
-          {n(4, "How to prevent it")}
-          <label className="block">
-            <span className={label}>How do we stop this happening again?</span>
-            <span className={hint}>{stage === "initial" ? "Optional now, expected in the Final Report." : "What should change so this never happens again?"}</span>
-            <textarea rows={4} maxLength={5000} className={area} value={f.fix_md} disabled={!writable} onChange={(e) => set("fix_md", e.target.value)} />
-          </label>
-        </div>
-      </div>
-
-      <aside className="h-fit space-y-4 rounded-xl border border-line bg-panel p-4 lg:sticky lg:top-16" aria-live="polite">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="font-semibold">{stage === "initial" ? "Your Initial Conclusion" : "Your Final Report"}</h2>
+      <fieldset className={box}>
+        <legend className="sr-only">Who did it?</legend>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-xl font-bold">1 · Who did it?</h2>
           <SaveIndicator state={state} error={error} />
         </div>
-        <ul className="space-y-1.5 text-sm">
-          {checks.map((c) => (
-            <li key={c.label} className={`flex items-center gap-2 ${c.ok ? "" : "text-muted"}`}>
-              <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${c.ok ? "bg-ok text-ink" : "border border-line"}`}>{c.ok ? "✓" : ""}</span>
-              {c.label}
-            </li>
-          ))}
-        </ul>
-
-        {writable ? (
-          <div className="space-y-3 border-t border-line pt-4">
-            {submit.kind === "idle" || submit.kind === "error" ? (
-              <button type="button" onClick={() => setSubmit({ kind: "confirming" })} className="w-full rounded-md bg-accent px-5 py-2.5 font-semibold text-ink hover:brightness-110">
-                Submit {stage === "initial" ? "Initial Conclusion" : "Final Report"}
+        <p className="mt-1 text-sm text-muted">Pick one suspect.</p>
+        <div className="mt-3 grid gap-2.5 sm:grid-cols-2" role="radiogroup" aria-label="Who did it?">
+          {suspects.map((s) => {
+            const on = f.culprit === s;
+            return (
+              <button
+                key={s}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                disabled={!writable}
+                onClick={() => setF((x) => ({ ...x, culprit: s }))}
+                className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 text-left disabled:cursor-not-allowed ${on ? "border-accent bg-accent/20" : "border-line bg-ink hover:border-accent/70 disabled:opacity-60 disabled:hover:border-line"}`}
+              >
+                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${on ? "border-accent" : "border-line"}`}>{on && <span className="h-2.5 w-2.5 rounded-full bg-accent" />}</span>
+                <span className="font-medium">{s}</span>
               </button>
-            ) : submit.kind === "confirming" ? (
-              <div className="space-y-3">
-                {missing.length > 0 && <p className="text-sm text-accent">Still empty: {missing.join(", ")}. You can submit anyway.</p>}
-                <p className="text-sm">
-                  {stage === "initial"
-                    ? "Your Initial Conclusion is recorded and cannot be changed. You can keep tagging evidence and editing your timeline until the organisers lock round 1."
-                    : "After submitting, your Final Report, timeline and tags are locked."}
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <div className={box}>
+        <label className="block">
+          <span className="type text-xl font-bold">2 · How do you know?</span>
+          <span className="mt-1 block text-sm text-muted">Two to four sentences. What happened, and which clues prove it?</span>
+          <textarea
+            rows={5}
+            maxLength={2000}
+            aria-label="How do you know?"
+            className="mt-3 w-full rounded-md border border-line bg-ink p-3 text-base focus:border-accent focus:outline-none disabled:opacity-60"
+            value={f.explanation}
+            disabled={!writable}
+            placeholder="e.g. We think it was … because the CCTV clue shows … and the payment record shows …"
+            onChange={(e) => setF((x) => ({ ...x, explanation: e.target.value }))}
+          />
+        </label>
+      </div>
+
+      {writable ? (
+        <div className={`${box} space-y-3`} aria-live="polite">
+          {submit.kind === "idle" || submit.kind === "error" ? (
+            <>
+              {unanswered > 0 && (
+                <p className="text-sm text-danger">
+                  You still have {unanswered} unanswered question{unanswered === 1 ? "" : "s"} in the Questions tab.
                 </p>
-                <div className="flex gap-2">
-                  <button type="button" onClick={doSubmit} className="flex-1 rounded-md bg-danger px-4 py-2 font-semibold text-white">
-                    Yes, submit
-                  </button>
-                  <button type="button" onClick={() => setSubmit({ kind: "idle" })} className="rounded-md border border-line px-4 py-2">
-                    Cancel
-                  </button>
-                </div>
+              )}
+              <button type="button" onClick={() => setSubmit({ kind: "confirming" })} className="w-full rounded-lg bg-accent px-5 py-3 text-lg font-bold text-white hover:brightness-110">
+                Submit {name}
+              </button>
+            </>
+          ) : submit.kind === "confirming" ? (
+            <div className="space-y-3">
+              {missing.length > 0 && <p className="text-sm text-danger">Still empty: {missing.join(" and ")}. You can submit anyway.</p>}
+              <p>
+                {stage === "initial"
+                  ? "Your Initial Conclusion will be recorded and cannot be changed. You can still change your question answers until the organisers lock round 1."
+                  : "After submitting, your Final Report and all your answers are locked."}
+              </p>
+              <div className="flex gap-2">
+                <button type="button" onClick={doSubmit} className="flex-1 rounded-lg bg-accent px-4 py-2.5 font-bold text-white">
+                  Yes, submit
+                </button>
+                <button type="button" onClick={() => setSubmit({ kind: "idle" })} className="rounded-lg border border-line px-4 py-2.5">
+                  Cancel
+                </button>
               </div>
-            ) : submit.kind === "sending" ? (
-              <p className="text-sm">Submitting… keep this page open.</p>
-            ) : (
-              <div className="space-y-2 text-sm">
-                <p className="font-semibold text-accent">We couldn’t confirm your submission (network problem).</p>
-                <p>It may or may not have arrived. Submitting again is safe: it will never create a duplicate.</p>
-                <div className="flex gap-2">
-                  <button type="button" onClick={doSubmit} className="rounded-md bg-accent px-4 py-2 font-semibold text-ink">Try again</button>
-                  <button type="button" onClick={() => router.refresh()} className="rounded-md border border-line px-4 py-2">Check status</button>
-                </div>
+            </div>
+          ) : submit.kind === "sending" ? (
+            <p>Submitting… keep this page open.</p>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <p className="font-semibold text-danger">We couldn’t confirm your submission (network problem).</p>
+              <p>It may or may not have arrived. Submitting again is safe: it will never create a duplicate.</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={doSubmit} className="rounded-lg bg-accent px-4 py-2 font-semibold text-white">Try again</button>
+                <button type="button" onClick={() => router.refresh()} className="rounded-lg border border-line px-4 py-2">Check status</button>
               </div>
-            )}
-            {submit.kind === "error" && <p className="text-sm text-danger" role="alert">{submit.message}</p>}
-            <p className="text-xs text-muted">Not submitted when time runs out? Your saved draft is locked and marked “auto-locked”. It is still scored.</p>
-          </div>
-        ) : (
-          <p className="rounded-md border border-line bg-ink p-2 text-xs text-muted">🔒 This page is read-only.</p>
-        )}
-      </aside>
+            </div>
+          )}
+          {submit.kind === "error" && <p className="text-sm text-danger" role="alert">{submit.message}</p>}
+          <p className="text-xs text-muted">Not submitted when time runs out? Your saved draft is locked as it is and still scored.</p>
+        </div>
+      ) : (
+        <p className="rounded-md border border-line bg-panel p-3 text-sm text-muted">🔒 This page is read-only.</p>
+      )}
     </div>
   );
 }

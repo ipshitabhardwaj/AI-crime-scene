@@ -1,23 +1,24 @@
+import CrimeTape from "@/components/CrimeTape";
 import LoginForm from "@/components/LoginForm";
 
 const STEPS = [
-  ["Observe", "Read every piece of evidence"],
-  ["Analyse", "Tag it relevant, misleading or noise"],
-  ["Connect", "Build the incident timeline"],
-  ["Investigate", "Submit an Initial Conclusion, then face the twist"],
-  ["Decode", "Submit the final case report"],
+  ["Read", "A short case and its suspects"],
+  ["Examine", "One clue per question"],
+  ["Accuse", "Name who did it"],
+  ["Twist", "New evidence arrives"],
+  ["Decode", "Give your final answer"],
 ];
 
 export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col">
-      <div className="tape h-3 w-full" />
+      <CrimeTape />
       <div className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-10 px-4 py-12 md:grid-cols-[1.1fr_1fr]">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">Event 07 · Tech investigation</p>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent">Event 07 · Detective challenge</p>
           <h1 className="mt-3 text-5xl font-black tracking-tight md:text-6xl">The AI Files</h1>
-          <p className="mt-2 text-xl text-muted">Decode the Crime</p>
-          <span className="stamp mt-6 text-danger/80">Case files · restricted</span>
+          <p className="type mt-2 text-2xl font-bold uppercase tracking-widest text-accent">Decode the Crime</p>
+          <span className="stamp mt-6 text-accent">Case files · restricted</span>
           <ol className="mt-8 hidden space-y-3 md:block">
             {STEPS.map(([t, d], i) => (
               <li key={t} className="flex items-center gap-3">
@@ -31,10 +32,10 @@ export default function LoginPage() {
         </div>
         <div>
           <LoginForm />
-          <p className="mt-4 text-center font-mono text-xs text-muted md:hidden">Observe → Analyse → Connect → Investigate → Decode</p>
+          <p className="mt-4 text-center font-mono text-xs text-muted md:hidden">Read → Examine → Accuse → Twist → Decode</p>
         </div>
       </div>
-      <div className="tape h-3 w-full" />
+      <CrimeTape />
     </main>
   );
 }

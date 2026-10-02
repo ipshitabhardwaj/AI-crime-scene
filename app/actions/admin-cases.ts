@@ -32,7 +32,7 @@ export async function uploadCase(jsonText: string, allowDuringEvent: boolean): P
     revalidatePath("/admin", "layout");
     const code = (parsed as { code?: string }).code;
     const note = ev && ev.phase !== "waiting" ? " Re-run auto-scoring before judging." : "";
-    return { ok: true, message: `Loaded ${code} with ${evidence} evidence items.${note}` };
+    return { ok: true, message: `Loaded ${code} with ${evidence} questions.${note}` };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }

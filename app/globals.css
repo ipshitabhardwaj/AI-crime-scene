@@ -1,17 +1,20 @@
 @import "tailwindcss";
 
+/* Crime-scene theme: near-black, blood red, paper white, police-tape yellow for warnings. */
 @theme {
-  --color-ink: #0b0f14;
-  --color-panel: #121821;
-  --color-panel2: #172030;
-  --color-line: #243041;
-  --color-muted: #8b98a9;
-  --color-text: #e6edf3;
-  --color-accent: #f5b83d;   /* evidence-tape amber */
-  --color-danger: #ef5b5b;
-  --color-ok: #3fb97f;
-  --color-info: #5aa9e6;
+  --color-ink: #0b0708;
+  --color-panel: #161012;
+  --color-panel2: #20161a;
+  --color-line: #3b272c;
+  --color-muted: #ab999d;
+  --color-text: #f6efef;
+  --color-accent: #e11d2e;   /* blood red: buttons, highlights, "what to do now" */
+  --color-danger: #f5c518;   /* police-tape yellow: warnings, errors, NEW */
+  --color-ok: #4ade80;
+  --color-info: #8ec5ff;
+  --color-paper: #f3ead9;    /* evidence paper */
   --font-mono: ui-monospace, "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --font-type: "Courier New", Courier, "Nimbus Mono PS", monospace; /* typewriter, for case-file headings */
 }
 
 html,
@@ -21,28 +24,46 @@ body {
 }
 
 body {
-  /* faint case-board grid */
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-  background-size: 32px 32px;
+  /* red glow from the top, like a darkroom lamp */
+  background-image: radial-gradient(ellipse 90% 55% at 50% -10%, rgba(225, 29, 46, 0.2), transparent 70%);
+  background-attachment: fixed;
+}
+
+h1,
+h2,
+.type {
+  font-family: var(--font-type);
+  letter-spacing: -0.01em;
 }
 
 ::selection {
-  background: rgba(245, 184, 61, 0.35);
+  background: rgba(225, 29, 46, 0.45);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-danger);
   outline-offset: 2px;
 }
 
+/* thin red/black barrier stripe */
 .tape {
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--color-accent) 0 14px,
-    #111 14px 28px
-  );
+  background: repeating-linear-gradient(-45deg, var(--color-accent) 0 14px, #0b0708 14px 28px);
+}
+
+/* crime-scene tape with repeated words */
+.crime-tape {
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--color-accent);
+  color: #0b0708;
+  font-family: var(--font-type);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  line-height: 26px;
+  text-transform: uppercase;
+  user-select: none;
+  border-block: 2px solid #0b0708;
 }
 
 /* rubber-stamp label, e.g. CONFIDENTIAL / SUBMITTED */
@@ -51,13 +72,22 @@ body {
   border: 2px solid currentColor;
   border-radius: 4px;
   padding: 2px 8px;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-family: var(--font-type);
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   transform: rotate(-2deg);
-  opacity: 0.9;
+  opacity: 0.95;
+}
+
+/* a clue shown as a sheet of paper pinned to the board */
+.exhibit {
+  background: var(--color-paper);
+  color: #1b1214;
+  border-radius: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  font-family: var(--font-type);
 }
 
 @media print {

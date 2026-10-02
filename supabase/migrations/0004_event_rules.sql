@@ -198,16 +198,16 @@ revoke all on function public.admin_lock_stage(public.submission_stage) from pub
 create or replace function public.admin_reset_event() returns void
 language plpgsql security definer set search_path = public as $$
 begin
-  delete from public.shortlist;
-  delete from public.judge_scores;
-  delete from public.judge_assignments;
-  delete from public.auto_scores;
-  delete from public.submissions;
-  delete from public.timeline_entries;
-  delete from public.evidence_tags;
-  delete from public.work_versions;
-  delete from public.login_attempts;
-  update public.teams set extra_minutes = 0, phase_extra_minutes = 0, phase_extra_phase = null;
+  delete from public.shortlist where true;
+  delete from public.judge_scores where true;
+  delete from public.judge_assignments where true;
+  delete from public.auto_scores where true;
+  delete from public.submissions where true;
+  delete from public.timeline_entries where true;
+  delete from public.evidence_tags where true;
+  delete from public.work_versions where true;
+  delete from public.login_attempts where true;
+  update public.teams set extra_minutes = 0, phase_extra_minutes = 0, phase_extra_phase = null where true;
   update public.event
      set phase = 'waiting', phase_ends_at = null, twist_released_at = null, updated_at = now()
    where id = 1;

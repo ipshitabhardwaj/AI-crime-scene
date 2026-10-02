@@ -1,0 +1,196 @@
+{
+  "code": "CASE-C",
+  "title": "The Museum Heist",
+  "briefing_md": "On Monday at 9 AM, curator Fatima Sheikh opened the City Heritage Museum and found the glass case of the Maharani's Emerald Necklace perfectly intact, with a necklace inside. But tests proved it was a fake.\n\nNo alarm rang, no glass broke, and the case was locked. On Sunday evening the museum had hosted Heritage Night, a party for donors.\n\nThree people are being talked about:\n• Joseph Pinto, 47, the night guard. He says he did his rounds and saw nothing.\n• Rekha Bhandari, 42, a jewellery designer (“RB Designs”) and donor guest. She says she admired the necklace but never touched it.\n• Ramesh Bose, 50, the caterer for Heritage Night. He says he never left the banquet hall.\n\nMost people suspect the night guard. When and how did the real necklace vanish, and who took it?",
+  "suspects": [
+    "Joseph Pinto (night guard)",
+    "Rekha Bhandari (jewellery designer)",
+    "Ramesh Bose (caterer)"
+  ],
+  "questions": [
+    {
+      "code": "Q1",
+      "clue": {
+        "label": "The necklace",
+        "title": "The fake and the original",
+        "text": "• The necklace in the case is lighter than the original. Its clasp is plain and modern.\n• The catalogue photo of the original shows a clasp engraved with a small lion.\n• The glass case is unbroken and locked."
+      },
+      "question": "What kind of theft was this?",
+      "options": [
+        "A smash-and-grab in the middle of the night",
+        "The real necklace was swapped for a copy",
+        "The necklace was lost during cleaning",
+        "Nothing was actually stolen"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "Q2",
+      "clue": {
+        "label": "Sketchbook",
+        "title": "A young visitor's drawing",
+        "text": "A 10-year-old visitor drew the necklace on Saturday at 4 PM.\nHis sketch clearly shows the little lion on the clasp."
+      },
+      "question": "What does the sketch tell us?",
+      "options": [
+        "The swap happened before Saturday",
+        "The boy drew the fake necklace",
+        "The boy should be treated as a suspect",
+        "The real one was still there on Saturday"
+      ],
+      "answer": 4
+    },
+    {
+      "code": "Q3",
+      "clue": {
+        "label": "Cleaner's log",
+        "title": "Sunday morning",
+        "text": "Sunday 8 AM — Imran cleaned the glass of the case.\nHe wrote: “Necklace sparkling nicely. The little lion is shining.”"
+      },
+      "question": "What does this narrow down?",
+      "options": [
+        "The swap happened after Sunday 8 AM",
+        "The swap happened on Saturday night",
+        "Imran swapped the necklace while cleaning",
+        "The necklace was a fake from the start"
+      ],
+      "answer": 1
+    },
+    {
+      "code": "Q4",
+      "clue": {
+        "label": "Alarm and CCTV",
+        "title": "Sunday night",
+        "text": "• No alarm rang.\n• The gallery camera was off from 2 AM to 3 AM for routine maintenance.\n• The case's lock sensor shows the case was not opened at any time that night."
+      },
+      "question": "What does this tell us about the night?",
+      "options": [
+        "The thief opened the case between 2 AM and 3 AM",
+        "The thief cut the alarm wires before midnight",
+        "The case stayed shut all night",
+        "The guard switched the camera off on purpose"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "Q5",
+      "clue": {
+        "label": "Key box",
+        "title": "When the case was opened",
+        "text": "The case key stays in the curator's locked key box.\nOn Sunday the case was opened only once: at 7:15 PM, by the curator, to show the necklace to guests at Heritage Night (6 PM to 9 PM)."
+      },
+      "question": "When could the swap have happened?",
+      "options": [
+        "On Monday morning at 9 AM",
+        "During the cleaning at 8 AM",
+        "On Saturday afternoon at 4 PM",
+        "While the case was open on Sunday evening"
+      ],
+      "answer": 4
+    },
+    {
+      "code": "Q6",
+      "clue": {
+        "label": "Initials",
+        "title": "A mark on the fake",
+        "text": "Tiny initials are stamped on the hinge of the fake: “R.B.”\n\nTwo of the people being talked about have these initials: Rekha Bhandari and Ramesh Bose."
+      },
+      "question": "What can we say so far?",
+      "options": [
+        "It proves that Rekha made and swapped it",
+        "It proves that Ramesh made and swapped it",
+        "It points to an R.B., but which one could reach it?",
+        "The initials are only the shop's price code"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "Q7",
+      "clue": {
+        "label": "Guest list",
+        "title": "Wristbands at Heritage Night",
+        "text": "• Blue wristband: donors, allowed into the gallery. Rekha had a blue wristband.\n• Green wristband: caterers, banquet hall only. Ramesh had a green wristband.\n• A waiter: “The caterers stayed in the banquet hall. The corridor to the gallery needs a blue wristband.”"
+      },
+      "question": "Could Ramesh have reached the necklace?",
+      "options": [
+        "Yes, caterers were allowed everywhere",
+        "No, he could not enter the gallery",
+        "Yes, he had the curator's key",
+        "Yes, but only after 9 PM"
+      ],
+      "answer": 2
+    },
+    {
+      "code": "Q8",
+      "clue": {
+        "label": "The guard",
+        "title": "Joseph Pinto",
+        "text": "• In his locker: a loan recovery letter. He owes money.\n• Patrol sheet: Joseph was at the main gate from 7 PM to 9 PM, signed by two colleagues."
+      },
+      "question": "What does this tell us about Joseph?",
+      "options": [
+        "He owes money, but he was at the gate",
+        "He needed money, so he must have done it",
+        "He was in the gallery at 7:15 PM",
+        "He made the fake necklace himself"
+      ],
+      "answer": 1
+    }
+  ],
+  "twist_md": "New evidence has come in: statements from the curator and from another guest who was in the gallery.",
+  "twist_questions": [
+    {
+      "code": "T1",
+      "clue": {
+        "label": "Curator's statement",
+        "title": "Fatima Sheikh",
+        "text": "“At 7:15 I unlocked the case so that Rekha and Mr. Anil could see the necklace up close. At 7:20 I stepped out for a phone call and was gone about five minutes. I relocked the case at 7:25.”"
+      },
+      "question": "When was the open case not watched by the curator?",
+      "options": [
+        "From 6:00 PM to 7:15 PM",
+        "From 7:25 PM to 9:00 PM",
+        "From 7:20 PM to 7:25 PM",
+        "From 2:00 AM to 3:00 AM"
+      ],
+      "answer": 3
+    },
+    {
+      "code": "T2",
+      "clue": {
+        "label": "Guest's statement",
+        "title": "Mr. Anil Chopra, donor, 78",
+        "text": "Mr. Anil has poor eyesight.\n\n“Rekha held the necklace while Fatima was out. She turned her back to me.”"
+      },
+      "question": "What most likely happened in those five minutes?",
+      "options": [
+        "Rekha swapped it for a copy she had made",
+        "Mr. Anil took the necklace home with him",
+        "The curator hid the necklace in her office",
+        "Rekha only admired it, just as she said"
+      ],
+      "answer": 1
+    },
+    {
+      "code": "T3",
+      "clue": {
+        "label": "Guest's statement",
+        "title": "Later that evening",
+        "text": "Mr. Anil: “Later that evening Rekha told me her studio is nearly bankrupt.”\n\nThe necklace is worth crores."
+      },
+      "question": "What was the motive?",
+      "options": [
+        "Revenge on the curator",
+        "To embarrass the museum",
+        "A dare from a friend",
+        "Money to save her studio"
+      ],
+      "answer": 4
+    }
+  ],
+  "answer": {
+    "first_suspect": "Joseph Pinto (night guard)",
+    "culprit": "Rekha Bhandari (jewellery designer)",
+    "explanation": "Rekha Bhandari swapped the real necklace for a replica she had made (stamped R.B.) on Sunday evening, between 7:20 and 7:25 PM, while the curator was out on a phone call. She held the necklace with her back to Mr. Anil, who has poor eyesight. The boy's Saturday sketch and the cleaner's Sunday 8 AM log show the real necklace, with its lion clasp, was there until Sunday. The case was not opened at night, so the camera gap is irrelevant. Ramesh Bose shares the initials but had a green wristband and could not enter the gallery. Joseph owes money but was at the main gate from 7 to 9 PM. Rekha's studio was nearly bankrupt."
+  }
+}

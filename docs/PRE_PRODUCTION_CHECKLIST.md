@@ -1,6 +1,8 @@
 # Pre-Production Checklist — The AI Files (final behaviour)
 
-Updated 29 Sep 2026, after the implementation round. This file describes the platform **as it is now**. The detailed rules live in:
+> **Note (October 2026):** the game was simplified to a quiz (case story → multiple-choice questions → short report → twist). The parts of this file about Supabase settings, login capacity, migrations, security checks and the dry run are still valid. Wherever it mentions tagging, timelines, evidence items or the old scoring, read [`SCORING.md`](SCORING.md), [`STATE_MACHINE.md`](STATE_MACHINE.md) and the README instead.
+
+Updated 29 Sep 2026, after the implementation round. The detailed rules live in:
 
 - [`SCORING.md`](SCORING.md)
 - [`STATE_MACHINE.md`](STATE_MACHINE.md)
