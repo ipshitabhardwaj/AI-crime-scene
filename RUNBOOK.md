@@ -68,6 +68,7 @@ A one-page printable version is in `docs/organizer-checklist.pdf`. The phase rul
 ## TWIST
 
 - [ ] **3 · Release the twist** (tick *I'm sure*, 10 min).
+- Every open team page shows a full-screen notice: *do not submit your Final Report yet — answer the new questions first*. On the Report tab the Submit button is replaced by "Answer the new questions" until they are answered (a team can still choose to submit without them).
 - [ ] The projector shows NEW EVIDENCE RELEASED. Teams see the new clues with 3 new questions, then write their Final Report (it starts as a copy of their Initial Conclusion).
 
 ## FINAL SUBMISSION
@@ -103,6 +104,7 @@ A one-page printable version is in `docs/organizer-checklist.pdf`. The phase rul
 
 - [ ] Final **Export CSV**.
 - [ ] **7 · Reveal results** (tick *I'm sure*). The projector reveals 10th → 1st over ~15 s. Judge scores are now frozen.
+- Team pages get a 4th tab, **Results**: the team's own score card (breakdown, right/wrong per question, never the correct option) and the full leaderboard of all teams. It is visible to teams only in this phase. Check the scores on the organiser Results page **before** you press Reveal.
 
 ## ARCHIVE / RESET
 

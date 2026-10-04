@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { selectAll } from "@/lib/db";
-import { judgePoints, letterToChoice, scoreAuto, type KeyQuestion, type TeamAnswer } from "@/lib/scoring";
+import { countCorrect, judgePoints, letterToChoice, scoreAuto, type KeyQuestion, type TeamAnswer } from "@/lib/scoring";
 
 type QuestionKeyRow = { id: string; code: string; case_id: string; is_twist: boolean; answer_evidence: { timeline_pos: number | null } | null };
 
@@ -145,4 +145,31 @@ export async function getLeaderboard(db: SupabaseClient): Promise<LeaderRow[]> {
   );
   rows.forEach((r, i) => (r.rank = i + 1));
   return rows;
+}
+
+/** One question on a team's own score card: answered or not, right or wrong. Never the correct option itself. */
+export type AnswerMark = { code: string; twist: boolean; answered: boolean; correct: boolean };
+
+/**
+ * A team's answers marked right/wrong, with the same rule as the auto-score
+ * (a round-1 answer changed after the twist counts as wrong). Needs a
+ * service-role client; call it only once the results are revealed.
+ */
+export async function getTeamAnswerMarks(db: SupabaseClient, teamId: string, caseId: string): Promise<AnswerMark[]> {
+  const [{ data: event }, { data: ev }, { data: tags }] = await Promise.all([
+    db.from("event").select("twist_released_at").eq("id", 1).maybeSingle<{ twist_released_at: string | null }>(),
+    db.from("evidence").select("id, code, case_id, is_twist, answer_evidence(timeline_pos)").eq("case_id", caseId).order("sort_order").returns<QuestionKeyRow[]>(),
+    db.from("evidence_tags").select("evidence_id, note, updated_at").eq("team_id", teamId).returns<{ evidence_id: string; note: string; updated_at: string }[]>(),
+  ]);
+  const byQuestion = new Map((tags ?? []).map((t) => [t.evidence_id, t]));
+  return (ev ?? []).map((q) => {
+    const t = byQuestion.get(q.id);
+    const choice = letterToChoice(t?.note);
+    const answer = q.answer_evidence?.timeline_pos ?? 0;
+    const { correct } = countCorrect(
+      { key: [{ code: q.code, answer, twist: q.is_twist }], answers: { [q.code]: { choice, updatedAt: t?.updated_at } }, twistReleasedAt: event?.twist_released_at ?? null },
+      q.is_twist,
+    );
+    return { code: q.code, twist: q.is_twist, answered: choice !== null, correct: correct === 1 };
+  });
 }

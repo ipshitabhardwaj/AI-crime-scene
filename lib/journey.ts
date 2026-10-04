@@ -37,9 +37,9 @@ export function nextStep(i: JourneyInput): NextStep {
   if (i.phase === "twist" || i.phase === "final") {
     if (finalDone) return { title: "Final Report submitted ✓", body: "Nothing more to do. Wait for the results.", tone: "ok" };
     if (i.timeUp) return { title: "Time is up", body: "Your saved answers will be scored as they are.", tone: "neutral" };
-    if (twistLeft > 0) return { title: `New evidence! ${twistLeft} new question${s(twistLeft)}`, body: "Read the new clues and answer the new questions.", href: "/play/questions", cta: "See the new clues", tone: "danger" };
+    if (twistLeft > 0) return { title: `New evidence! ${twistLeft} new question${s(twistLeft)}`, body: "Do not submit your Final Report yet. First read the new clues and answer the new questions.", href: "/play/questions", cta: "See the new clues", tone: "danger" };
     return { title: "Submit your Final Report", body: "Did the new evidence change your mind? Give your final answer.", href: "/play/report", cta: "Final answer", tone: "accent" };
   }
-  if (i.phase === "results") return { title: "Results are out", body: "Look at the big screen. Thanks for investigating!", tone: "ok" };
+  if (i.phase === "results") return { title: "Results are out", body: "See your score and the final leaderboard. Thanks for investigating!", href: "/play/results", cta: "See your score", tone: "ok" };
   return { title: "Submissions are closed", body: "Judges are scoring. Shortlisted teams will be called to present.", tone: "neutral" };
 }

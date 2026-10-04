@@ -12,8 +12,9 @@ export default function TeamHelp() {
           ["Read the case (tab 1)", "A short story and the list of suspects."],
           ["Answer the questions (tab 2)", "Each question shows one clue and four options. Tap the best answer. It saves by itself, and you can change it until the round is locked."],
           ["Submit your Initial Conclusion (tab 3)", "Pick who you think did it and explain why in a few sentences. Press Submit."],
-          ["The twist", "New evidence arrives with a few new questions. Did it change your mind?"],
+          ["The twist", "New evidence arrives with a few new questions. Answer them first — do not submit your Final Report before that."],
           ["Submit your Final Report (tab 3)", "Your final answer: who did it, and how you know."],
+          ["Results (tab 4)", "When the organisers reveal the results, you see your own score and the final leaderboard."],
         ]}
       />
       <p className="text-muted">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { saveReport, submitReport, type ReportFields } from "@/app/actions/team";
 import type { Stage } from "@/lib/types";
@@ -43,6 +44,12 @@ export default function ReportForm({
   const [submit, setSubmit] = useState<SubmitState>({ kind: "idle" });
   const router = useRouter();
   const name = stage === "initial" ? "Initial Conclusion" : "Final Report";
+
+  // After the twist, the new questions come first: the big button leads there
+  // and submitting needs a deliberate second choice. (Not a hard block, so a
+  // team that is out of time can still hand in.)
+  const gate = stage === "final" && unanswered > 0;
+  const [skipGate, setSkipGate] = useState(false);
 
   const missing = [!f.culprit && "who did it", !f.explanation.trim() && "your explanation"].filter(Boolean) as string[];
 
@@ -113,7 +120,20 @@ export default function ReportForm({
 
       {writable ? (
         <div className={`${box} space-y-3`} aria-live="polite">
-          {submit.kind === "idle" || submit.kind === "error" ? (
+          {(submit.kind === "idle" || submit.kind === "error") && gate && !skipGate ? (
+            <div className="rounded-lg border-2 border-danger/70 bg-danger/10 p-4">
+              <p className="text-lg font-bold text-danger">
+                Not yet — you have {unanswered} new question{unanswered === 1 ? "" : "s"} to answer first.
+              </p>
+              <p className="mt-1 text-sm">The new evidence may change who did it. Answer the new questions, then come back here for your Final Report.</p>
+              <Link prefetch={false} href="/play/questions" className="mt-3 block w-full rounded-lg bg-danger px-5 py-3 text-center text-lg font-bold text-ink hover:brightness-110">
+                Answer the new questions →
+              </Link>
+              <button type="button" onClick={() => setSkipGate(true)} className="mt-3 text-xs text-muted underline hover:text-text">
+                Submit without answering them (they will score 0)
+              </button>
+            </div>
+          ) : submit.kind === "idle" || submit.kind === "error" ? (
             <>
               {unanswered > 0 && (
                 <p className="text-sm text-danger">
@@ -127,6 +147,11 @@ export default function ReportForm({
           ) : submit.kind === "confirming" ? (
             <div className="space-y-3">
               {missing.length > 0 && <p className="text-sm text-danger">Still empty: {missing.join(" and ")}. You can submit anyway.</p>}
+              {gate && (
+                <p className="text-sm font-semibold text-danger">
+                  {unanswered} new question{unanswered === 1 ? " is" : "s are"} still unanswered and will score 0.
+                </p>
+              )}
               <p>
                 {stage === "initial"
                   ? "Your Initial Conclusion will be recorded and cannot be changed. You can still change your question answers until the organisers lock round 1."

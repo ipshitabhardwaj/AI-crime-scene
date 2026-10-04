@@ -39,7 +39,9 @@ export default async function ReportPage() {
           reportWritable
             ? shownStage === "initial"
               ? "Who do you think did it? It saves automatically. Press Submit when you are ready — then it is locked."
-              : "The new evidence is in. Give your final answer. It saves automatically; press Submit when you are ready."
+              : counts.twist - counts.twistAnswered > 0
+                ? "The new evidence is in. Answer the new questions first (Questions tab), then give your final answer here."
+                : "The new evidence is in and you answered the new questions. Give your final answer; press Submit when you are ready."
             : closedReason
         }
       />

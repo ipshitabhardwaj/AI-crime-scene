@@ -3,19 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export type NavBadges = { questions: string; questionsTone: "ok" | "accent" | "muted"; report: string; reportTone: "ok" | "accent" | "muted" };
+export type NavBadges = { questions: string; questionsTone: "ok" | "accent" | "muted"; report: string; reportTone: "ok" | "accent" | "muted"; /** show the 4th tab (Results phase only) */ results?: boolean };
 
-/** Numbered tabs: 1 Case → 2 Questions → 3 Report, each with its status. */
+/** Numbered tabs: 1 Case → 2 Questions → 3 Report (→ 4 Results once revealed), each with its status. */
 export default function PlayNav({ badges }: { badges: NavBadges }) {
   const path = usePathname();
   const tabs = [
     { href: "/play", n: 1, label: "Case", badge: "the story", tone: "muted" as const },
     { href: "/play/questions", n: 2, label: "Questions", badge: badges.questions, tone: badges.questionsTone },
     { href: "/play/report", n: 3, label: "Report", badge: badges.report, tone: badges.reportTone },
+    ...(badges.results ? [{ href: "/play/results", n: 4, label: "Results", badge: "your score", tone: "ok" as const }] : []),
   ];
   const toneCls = { ok: "bg-ok/15 text-ok", accent: "bg-accent/20 text-text", muted: "bg-line/60 text-muted" };
   return (
-    <nav aria-label="Case file sections" className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-panel p-1">
+    <nav aria-label="Case file sections" className={`grid gap-1 rounded-xl border border-line bg-panel p-1 ${badges.results ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"}`}>
       {tabs.map((t) => {
         const active = t.href === "/play" ? path === "/play" : path.startsWith(t.href);
         return (
