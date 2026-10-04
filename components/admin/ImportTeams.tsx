@@ -6,9 +6,11 @@ import { useMemo, useState } from "react";
 import { importTeams, type ImportResult, type ImportRow } from "@/app/actions/admin-teams";
 import { ui } from "@/lib/ui";
 
-type Field = "name" | "institution" | "email" | "phone" | "member1" | "member2" | "member3" | "member4";
+type Field = "code" | "pin" | "name" | "institution" | "email" | "phone" | "member1" | "member2" | "member3" | "member4";
 
 const FIELDS: { id: Field; label: string; required?: boolean; guess: RegExp }[] = [
+  { id: "code", label: "Team ID (optional — else AIF-001, 002…)", guess: /^team\s*(id|code)$/i },
+  { id: "pin", label: "PIN, 6–20 letters/digits (optional — else random)", guess: /^pin$|^password$/i },
   { id: "name", label: "Team name", required: true, guess: /team\s*name|^team$/i },
   { id: "institution", label: "College / institution", guess: /college|institut|university|school/i },
   { id: "email", label: "Leader email", guess: /e-?mail/i },
@@ -86,7 +88,11 @@ export default function ImportTeams() {
       if (!name) issues.push("no team name → will be skipped");
       if (map.member1 && (members.length < 2 || members.length > 4)) issues.push(`${members.length} member(s)`);
       if (email && !/^\S+@\S+\.\S+$/.test(email)) issues.push("invalid email → will fail");
-      return { name, institution: get("institution"), email, phone: get("phone"), members, source: r, line: i + 2, issues };
+      const code = get("code").toUpperCase();
+      const pin = get("pin").toUpperCase();
+      if (code && !/^[A-Z0-9-]{3,20}$/.test(code)) issues.push("Team ID must be 3–20 letters, digits or dashes → will fail");
+      if (pin && !/^[A-Z0-9]{6,20}$/.test(pin)) issues.push("PIN must be 6–20 letters or digits, no spaces → will fail");
+      return { code, pin, name, institution: get("institution"), email, phone: get("phone"), members, source: r, line: i + 2, issues };
     });
     for (const m of out) {
       if (m.name && (seenName.get(m.name.toLowerCase()) ?? 0) > 1) m.issues.push("duplicate name in file (only the first is imported)");
@@ -96,7 +102,7 @@ export default function ImportTeams() {
   }, [rows, map]);
 
   const run = async () => {
-    const all: ImportRow[] = mapped.map((m) => ({ name: m.name, institution: m.institution, email: m.email, phone: m.phone, members: m.members, source: m.source }));
+    const all: ImportRow[] = mapped.map((m) => ({ code: m.code, pin: m.pin, name: m.name, institution: m.institution, email: m.email, phone: m.phone, members: m.members, source: m.source }));
     setProgress({ done: 0, total: all.length });
     const total: ImportResult = { created: [], skipped: [], failed: [] };
     for (let i = 0; i < all.length; i += CHUNK) {

@@ -87,7 +87,8 @@ async function signInAndRedirect(key: string, email: string, password: string, e
 
 export async function loginTeam(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const code = normaliseTeamCode(String(formData.get("code") ?? "")).slice(0, 20);
-  const pin = String(formData.get("pin") ?? "").trim().slice(0, 20);
+  // PINs are digits or (when imported) letters and digits such as a roll number: letters are stored in capitals.
+  const pin = String(formData.get("pin") ?? "").trim().toUpperCase().slice(0, 20);
   if (!code || !pin) return { error: "Enter your team code and PIN." };
   if (!/^[A-Z0-9-]+$/.test(code)) return { error: "Team codes look like AIF-014." };
   return signInAndRedirect(`team:${code}`, teamCodeToEmail(code), pin, "team");

@@ -60,7 +60,7 @@ export default async function TeamsPage({ searchParams }: { searchParams: Promis
 
       <section className={ui.card}>
         <h2 className="mb-1 font-semibold">1 · Import from registration form</h2>
-        <p className="mb-4 text-sm text-muted">Creates a team code (AIF-001…), a 6-digit PIN and a login for each row, and assigns cases round-robin.</p>
+        <p className="mb-4 text-sm text-muted">Creates a team code (AIF-001…), a PIN and a login for each row (random 6 digits, unless the file has Team ID / PIN columns), and assigns cases round-robin.</p>
         <ImportTeams />
       </section>
 

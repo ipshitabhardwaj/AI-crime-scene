@@ -40,7 +40,7 @@ export default function LoginForm() {
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">PIN</span>
-            <input name="pin" type="password" inputMode="numeric" placeholder="6 digits" autoComplete="current-password" className={`${input} font-mono`} required />
+            <input name="pin" type="password" placeholder="PIN" autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoComplete="current-password" className={`${input} font-mono`} required />
           </label>
           {teamState.error && <p role="alert" className="rounded-md border border-danger/50 bg-danger/10 p-2 text-sm text-danger">{teamState.error}</p>}
           <button disabled={teamPending} className="w-full rounded-md bg-accent py-2.5 font-semibold text-white disabled:opacity-60">

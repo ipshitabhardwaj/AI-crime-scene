@@ -12,6 +12,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const PATH = "/admin/teams";
 
 const RowSchema = z.object({
+  /** optional: a chosen Team ID / PIN instead of the generated ones */
+  code: z.string().trim().max(20).optional().default(""),
+  pin: z.string().trim().max(20).optional().default(""),
   name: z.string().trim().max(80),
   institution: z.string().trim().max(120).optional().default(""),
   email: z.string().trim().max(200).optional().default(""),
@@ -53,6 +56,7 @@ export async function importTeams(rows: ImportRow[]): Promise<ImportResult> {
     ),
     db.from("cases").select("id, code").order("code"),
   ]);
+  const codes = new Set(existing.map((t) => t.team_code.toUpperCase()));
   const names = new Set(existing.map((t) => t.name.trim().toLowerCase()));
   const emails = new Set(existing.map((t) => t.contact_email?.trim().toLowerCase()).filter(Boolean));
   let next = Math.max(0, ...existing.map((t) => Number(/^AIF-(\d+)$/.exec(t.team_code)?.[1] ?? 0))) + 1;
@@ -84,9 +88,25 @@ export async function importTeams(rows: ImportRow[]): Promise<ImportResult> {
       continue;
     }
 
-    const num = next++;
-    const code = `AIF-${String(num).padStart(3, "0")}`;
-    const pin = newPin();
+    const wantCode = row.code.toUpperCase();
+    if (wantCode && !/^[A-Z0-9-]{3,20}$/.test(wantCode)) {
+      result.failed.push({ name, reason: `Team ID “${row.code}” must be 3–20 letters, digits or dashes.` });
+      continue;
+    }
+    if (wantCode && codes.has(wantCode)) {
+      result.skipped.push({ name, reason: `Team ID ${wantCode} already exists` });
+      continue;
+    }
+    const wantPin = row.pin.toUpperCase();
+    if (wantPin && !/^[A-Z0-9]{6,20}$/.test(wantPin)) {
+      result.failed.push({ name, reason: `PIN “${row.pin}” must be 6–20 letters or digits, no spaces (a spreadsheet may have dropped a leading 0).` });
+      continue;
+    }
+    // A chosen Team ID keeps its own number (AIF-014 → 14) for the case rotation.
+    while (!wantCode && codes.has(`AIF-${String(next).padStart(3, "0")}`)) next++;
+    const num = wantCode ? Number(/(\d+)$/.exec(wantCode)?.[1] ?? next) : next++;
+    const code = wantCode || `AIF-${String(num).padStart(3, "0")}`;
+    const pin = wantPin || newPin();
     const members = row.members.filter(Boolean).map((m) => ({ name: m }));
 
     const { data: team, error: teamErr } = await db
@@ -98,7 +118,7 @@ export async function importTeams(rows: ImportRow[]): Promise<ImportResult> {
         contact_email: email,
         contact_phone: row.phone || null,
         members,
-        case_id: caseIds.length ? caseIds[(num - 1) % caseIds.length] : null,
+        case_id: caseIds.length ? caseIds[(((num - 1) % caseIds.length) + caseIds.length) % caseIds.length] : null,
         source_row: row.source ?? null,
       })
       .select("id")
@@ -133,6 +153,7 @@ export async function importTeams(rows: ImportRow[]): Promise<ImportResult> {
       continue;
     }
 
+    codes.add(code);
     names.add(name.toLowerCase());
     if (email) emails.add(email);
     result.created.push({ code, pin, name });
