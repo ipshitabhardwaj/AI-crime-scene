@@ -32,3 +32,13 @@ The four event cases come from the organisers' "Crime Scene: The Unsolved Case" 
 
 - Case A involves a death. It is described without detail, but tell the faculty in charge if that matters for your event.
 - The cases are easy by design; ranking will lean on the Initial Conclusion points, the judges and submission time.
+
+## Difficulty raised (4 Oct 2026)
+
+At the organisers' request the questions were made harder. Stories, suspects, culprits, pictures, the number of questions (8 + 3) and the scoring are unchanged.
+
+- Questions now ask teams to combine facts, weigh a clue ("a hint, not proof") or reject a tempting wrong reading, instead of repeating what the clue says.
+- Wrong options are plausible partial readings of the same clue.
+- Round-1 questions no longer have the culprit's name as the answer (Locked Room Q6, Missing Person Q7).
+- Small facts were added so every question has one defensible answer: the doctor's note and the cinema car-park stamps (Locked Room); the unlocked drawer, the 8:01 PM forward and the corridor guard (Leaked Paper); the lock-sensor hours and "weeks to make" (Museum Heist); "last seen at 9:05 PM" and Friday's rehearsal (Missing Person).
+- `npm run audit:cases` reports no warnings: correct answers are spread over A–D and the correct option is the longest in at most 3 of 11 questions per case.

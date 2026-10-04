@@ -15,12 +15,12 @@
         "title": "The fake and the original",
         "text": "• The necklace in the case is lighter than the original. Its clasp is plain and modern.\n• The catalogue photo of the original shows a clasp engraved with a small lion.\n• The glass case is unbroken and locked."
       },
-      "question": "What kind of theft was this?",
+      "question": "The case is intact and locked, yet the necklace inside is a fake. What does that say about the thief?",
       "options": [
-        "A smash-and-grab in the middle of the night",
-        "The real necklace was swapped for a copy",
-        "The necklace was lost during cleaning",
-        "Nothing was actually stolen"
+        "They broke in at night and replaced the glass before morning",
+        "They stood at the open case at some point, with a copy ready",
+        "They took it while the necklace was being moved between museums",
+        "They sold the museum a fake necklace in the first place"
       ],
       "answer": 2
     },
@@ -31,12 +31,12 @@
         "title": "A young visitor's drawing",
         "text": "A 10-year-old visitor drew the necklace on Saturday at 4 PM.\nHis sketch clearly shows the little lion on the clasp."
       },
-      "question": "What does the sketch tell us?",
+      "question": "A child's sketch is not expert evidence. Why is it still useful here?",
       "options": [
-        "The swap happened before Saturday",
-        "The boy drew the fake necklace",
-        "The boy should be treated as a suspect",
-        "The real one was still there on Saturday"
+        "Because children notice more than adults and never get details wrong",
+        "Because it proves the swap had already happened by Saturday",
+        "Because it shows the boy stood close enough to touch the necklace",
+        "Because it records a detail that only the real necklace has"
       ],
       "answer": 4
     },
@@ -47,12 +47,12 @@
         "title": "Sunday morning",
         "text": "Sunday 8 AM — Imran cleaned the glass of the case.\nHe wrote: “Necklace sparkling nicely. The little lion is shining.”"
       },
-      "question": "What does this narrow down?",
+      "question": "Put the sketch and the cleaner's note together. What do they narrow down?",
       "options": [
-        "The swap happened after Sunday 8 AM",
-        "The swap happened on Saturday night",
-        "Imran swapped the necklace while cleaning",
-        "The necklace was a fake from the start"
+        "The real necklace was still there at 8 AM on Sunday",
+        "The swap happened between Saturday 4 PM and Sunday 8 AM",
+        "Imran swapped the necklace while he was cleaning the glass",
+        "The necklace had been a fake since before Saturday"
       ],
       "answer": 1
     },
@@ -61,14 +61,14 @@
       "clue": {
         "label": "Alarm and CCTV",
         "title": "Sunday night",
-        "text": "• No alarm rang.\n• The gallery camera was off from 2 AM to 3 AM for routine maintenance.\n• The case's lock sensor shows the case was not opened at any time that night."
+        "text": "• No alarm rang.\n• The gallery camera was off from 2 AM to 3 AM for routine maintenance.\n• The case's lock sensor shows the case was not opened at any time between 9 PM on Sunday and 9 AM on Monday."
       },
-      "question": "What does this tell us about the night?",
+      "question": "The camera was off for an hour. Why is that hour NOT when the theft happened?",
       "options": [
-        "The thief opened the case between 2 AM and 3 AM",
-        "The thief cut the alarm wires before midnight",
-        "The case stayed shut all night",
-        "The guard switched the camera off on purpose"
+        "Because the night guard was awake and on his rounds",
+        "Because the camera would still have recorded the thief in the dark",
+        "Because the lock sensor shows the case stayed shut all night",
+        "Because thieves avoid a museum during maintenance work"
       ],
       "answer": 3
     },
@@ -79,12 +79,12 @@
         "title": "When the case was opened",
         "text": "The case key stays in the curator's locked key box.\nOn Sunday the case was opened only once: at 7:15 PM, by the curator, to show the necklace to guests at Heritage Night (6 PM to 9 PM)."
       },
-      "question": "When could the swap have happened?",
+      "question": "The real necklace was there at 8 AM on Sunday and the case stayed shut all night. When was the swap?",
       "options": [
-        "On Monday morning at 9 AM",
-        "During the cleaning at 8 AM",
-        "On Saturday afternoon at 4 PM",
-        "While the case was open on Sunday evening"
+        "During the cleaning at 8 AM on Sunday",
+        "Between 2 AM and 3 AM on Monday, while the gallery camera was off",
+        "On Monday morning, just before the museum opened",
+        "On Sunday evening, while the case was open for the guests"
       ],
       "answer": 4
     },
@@ -95,12 +95,12 @@
         "title": "A mark on the fake",
         "text": "Tiny initials are stamped on the hinge of the fake: “R.B.”\n\nTwo of the people being talked about have these initials: Rekha Bhandari and Ramesh Bose."
       },
-      "question": "What can we say so far?",
+      "question": "Two people share these initials. What is the sensible next step?",
       "options": [
-        "It proves that Rekha made and swapped it",
-        "It proves that Ramesh made and swapped it",
-        "It points to an R.B., but which one could reach it?",
-        "The initials are only the shop's price code"
+        "Arrest Rekha at once, because she is the one who makes jewellery",
+        "Arrest Ramesh at once, because caterers carry bags and boxes",
+        "Find out which R.B. could get near the open case on Sunday evening",
+        "Ignore the initials, since anyone could stamp two letters on a hinge"
       ],
       "answer": 3
     },
@@ -111,12 +111,12 @@
         "title": "Wristbands at Heritage Night",
         "text": "• Blue wristband: donors, allowed into the gallery. Rekha had a blue wristband.\n• Green wristband: caterers, banquet hall only. Ramesh had a green wristband.\n• A waiter: “The caterers stayed in the banquet hall. The corridor to the gallery needs a blue wristband.”"
       },
-      "question": "Could Ramesh have reached the necklace?",
+      "question": "What do the wristbands change?",
       "options": [
-        "Yes, caterers were allowed everywhere",
-        "No, he could not enter the gallery",
-        "Yes, he had the curator's key",
-        "Yes, but only after 9 PM"
+        "Nothing: either R.B. could have walked into the gallery",
+        "They rule out one R.B., who could not enter the gallery",
+        "They rule out the donor, since donors were being watched",
+        "They show the waiter is covering for the caterers"
       ],
       "answer": 2
     },
@@ -127,12 +127,12 @@
         "title": "Joseph Pinto",
         "text": "• In his locker: a loan recovery letter. He owes money.\n• Patrol sheet: Joseph was at the main gate from 7 PM to 9 PM, signed by two colleagues."
       },
-      "question": "What does this tell us about Joseph?",
+      "question": "Most people suspect Joseph. What is the strongest point in his favour?",
       "options": [
-        "He owes money, but he was at the gate",
-        "He needed money, so he must have done it",
-        "He was in the gallery at 7:15 PM",
-        "He made the fake necklace himself"
+        "At the only time the case was open, two colleagues place him at the gate",
+        "He owes money, and people in debt are careful not to take risks",
+        "The camera was off at night, so nothing can be shown against him",
+        "He has guarded the museum for years without a single complaint"
       ],
       "answer": 1
     }
@@ -146,14 +146,14 @@
         "title": "Fatima Sheikh",
         "text": "“At 7:15 I unlocked the case so that Rekha and Mr. Anil could see the necklace up close. At 7:20 I stepped out for a phone call and was gone about five minutes. I relocked the case at 7:25.”"
       },
-      "question": "When was the open case not watched by the curator?",
+      "question": "While the case was open, for how long was the necklace out of the curator's sight, and who was with it?",
       "options": [
-        "From 6:00 PM to 7:15 PM",
-        "From 7:25 PM to 9:00 PM",
-        "From 7:20 PM to 7:25 PM",
-        "From 2:00 AM to 3:00 AM"
+        "About five minutes; Rekha and Mr. Anil",
+        "About ten minutes; Rekha on her own",
+        "About five minutes; nobody at all",
+        "About two hours; all the guests at the party"
       ],
-      "answer": 3
+      "answer": 1
     },
     {
       "code": "T2",
@@ -162,28 +162,28 @@
         "title": "Mr. Anil Chopra, donor, 78",
         "text": "Mr. Anil has poor eyesight.\n\n“Rekha held the necklace while Fatima was out. She turned her back to me.”"
       },
-      "question": "What most likely happened in those five minutes?",
+      "question": "What does Mr. Anil's statement do to the case?",
       "options": [
-        "Rekha swapped it for a copy she had made",
-        "Mr. Anil took the necklace home with him",
-        "The curator hid the necklace in her office",
-        "Rekha only admired it, just as she said"
+        "It clears Rekha, because he was standing beside her the whole time",
+        "It shows the curator lied about leaving for a phone call",
+        "It contradicts “never touched it” and gives a moment when no one saw her hands",
+        "It shows that Mr. Anil himself took the necklace home"
       ],
-      "answer": 1
+      "answer": 3
     },
     {
       "code": "T3",
       "clue": {
         "label": "Guest's statement",
         "title": "Later that evening",
-        "text": "Mr. Anil: “Later that evening Rekha told me her studio is nearly bankrupt.”\n\nThe necklace is worth crores."
+        "text": "Mr. Anil: “Later that evening Rekha told me her studio is nearly bankrupt.”\n\nThe necklace is worth crores. A jeweller says a copy this good takes weeks to make."
       },
-      "question": "What was the motive?",
+      "question": "What do “nearly bankrupt” and “weeks to make” tell us together?",
       "options": [
-        "Revenge on the curator",
-        "To embarrass the museum",
-        "A dare from a friend",
-        "Money to save her studio"
+        "It was a sudden temptation that came over a guest during the party",
+        "The curator had the copy made to claim the insurance money",
+        "The guard ordered the copy to pay off his loan",
+        "It was planned well ahead, by a skilled maker who needed money"
       ],
       "answer": 4
     }
@@ -191,6 +191,6 @@
   "answer": {
     "first_suspect": "Joseph Pinto (night guard)",
     "culprit": "Rekha Bhandari (jewellery designer)",
-    "explanation": "Rekha Bhandari swapped the real necklace for a replica she had made (stamped R.B.) on Sunday evening, between 7:20 and 7:25 PM, while the curator was out on a phone call. She held the necklace with her back to Mr. Anil, who has poor eyesight. The boy's Saturday sketch and the cleaner's Sunday 8 AM log show the real necklace, with its lion clasp, was there until Sunday. The case was not opened at night, so the camera gap is irrelevant. Ramesh Bose shares the initials but had a green wristband and could not enter the gallery. Joseph owes money but was at the main gate from 7 to 9 PM. Rekha's studio was nearly bankrupt."
+    "explanation": "Rekha Bhandari swapped the real necklace for a replica she had made in advance (stamped R.B.) on Sunday evening, between 7:20 and 7:25 PM, while the curator was out on a phone call. She held the necklace with her back to Mr. Anil, who has poor eyesight, although she said she never touched it. The boy's Saturday sketch and the cleaner's Sunday 8 AM log show the real necklace, with its lion clasp, was there until Sunday. The case was not opened at night, so the camera gap is irrelevant. Ramesh Bose shares the initials but had a green wristband and could not enter the gallery. Joseph owes money but was at the main gate from 7 to 9 PM. Rekha's studio was nearly bankrupt."
   }
 }

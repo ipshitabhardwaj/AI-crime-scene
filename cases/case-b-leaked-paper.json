@@ -15,28 +15,28 @@
         "title": "What the photo shows",
         "text": "The photo shows the question paper lying on a desk.\nQuestion 4 has a correction in red ink: “5 marks” changed to “6 marks”.\n\nProf. Anita Kapoor: “I made that correction in red pen at 6:30 PM.”"
       },
-      "question": "When was the photo taken?",
+      "question": "What does the red-ink correction rule out?",
       "options": [
-        "Before 5:00 PM",
-        "Before 6:30 PM",
-        "After 6:30 PM",
-        "We cannot tell at all"
+        "That the photo was taken at any time before 6:30 PM",
+        "That the photo was taken inside the department office",
+        "That a student was the one who posted the photo",
+        "That the paper was ever locked in the cupboard"
       ],
-      "answer": 3
+      "answer": 1
     },
     {
       "code": "Q2",
       "clue": {
         "label": "Steel cupboard",
         "title": "The cupboard in Room 204",
-        "text": "• No scratches. The lock is not forced.\n• Prof. Kapoor: “I locked the paper in the cupboard at 6:45 PM.”"
+        "text": "• No scratches. The lock is not forced.\n• Prof. Kapoor: “I locked the paper in the cupboard at 6:45 PM.”\n• On Friday morning the paper was in its envelope in the cupboard, and the cupboard was locked."
       },
-      "question": "How was the cupboard opened?",
+      "question": "What does this tell us about the leaker?",
       "options": [
-        "It was broken open with a tool",
-        "With a key",
-        "It was never locked at all",
-        "Through the back panel"
+        "They forced the cupboard open and then repaired the lock",
+        "They used a key, and locked the paper away again afterwards",
+        "They photographed the paper through a gap in the cupboard door",
+        "They took the paper home and brought it back in the morning"
       ],
       "answer": 2
     },
@@ -45,14 +45,14 @@
       "clue": {
         "label": "Keys",
         "title": "Who holds a key",
-        "text": "Prof. Kapoor: “There are two keys. Mine was in my handbag all night. The spare key stays with Mr. Bhatia, the clerk.”"
+        "text": "Prof. Kapoor: “There are two keys. Mine was in my handbag all night, at home. The spare stays in Mr. Bhatia's desk drawer in Room 204. The drawer is not locked.”"
       },
-      "question": "What does this mean?",
+      "question": "After 6:45 PM, who could have opened the cupboard?",
       "options": [
-        "Any student could have opened the cupboard",
-        "Rohan has a key of his own",
-        "The cupboard does not need a key",
-        "Only the professor's key or the clerk's spare fits"
+        "Only Prof. Kapoor, because she alone carries a key to that cupboard",
+        "Only Mr. Bhatia, because the spare key is his",
+        "Any student of the class, at any time that evening",
+        "Anyone who got into Room 204 and knew about the drawer"
       ],
       "answer": 4
     },
@@ -63,12 +63,12 @@
         "title": "Rohan's evening",
         "text": "Rohan Verma — IN 5:10 PM, OUT 8:45 PM.\nThe librarian confirms he did not leave.\n\nThe photo was posted at 8:05 PM."
       },
-      "question": "What does this tell us about Rohan?",
+      "question": "Rohan can enter Room 204. Why does that not make him the leaker?",
       "options": [
-        "He was in the library the whole time",
-        "He took the photo before going to the library",
-        "He left the library at 8:05 PM to post it",
-        "He was never in the library at all"
+        "The photo was taken after 6:30 PM, when he was in the library",
+        "Teaching assistants are never shown the exam papers",
+        "He had already gone home from the campus at 5:00 PM",
+        "The library does not allow phones or cameras inside the reading room"
       ],
       "answer": 1
     },
@@ -79,12 +79,12 @@
         "title": "Nisha's evening",
         "text": "Prof. Kapoor: “Nisha came at 6:50 to collect lab files. She was with me the whole time. We left together at 7:10. The paper was already locked away at 6:45.”"
       },
-      "question": "What does this tell us about Nisha?",
+      "question": "Nisha was in Room 204 that evening. What actually clears her?",
       "options": [
-        "She had the cupboard key with her",
-        "She was never alone with the paper",
-        "She stayed back after the professor left",
-        "She took the photo at 6:50 PM"
+        "She is the class topper, so she has no need to see the paper before the exam",
+        "The paper was locked before she came, and she was never there alone",
+        "She left Room 204 before the red-ink correction was made",
+        "She was only there to collect lab files, not exam papers"
       ],
       "answer": 2
     },
@@ -95,12 +95,12 @@
         "title": "A mug in the photo",
         "text": "• In the background of the leaked photo: a chipped green mug on top of the steel cupboard.\n• Rohan's mug is blue and has his name on it."
       },
-      "question": "What does the mug tell us?",
+      "question": "What does the background of the photo tell us?",
       "options": [
-        "The photo was taken in the library reading room",
-        "The mug in the photo clearly belongs to Rohan",
-        "The photo was taken in Room 204; the mug is not Rohan's",
-        "The photo was taken at the professor's home"
+        "It was taken in the library, and the mug belongs to Rohan",
+        "It was taken at the professor's home, where she kept her key",
+        "It was taken in Room 204, and the green mug's owner is worth finding",
+        "It was edited, because nobody keeps a mug on top of a cupboard"
       ],
       "answer": 3
     },
@@ -109,14 +109,14 @@
       "clue": {
         "label": "WhatsApp group",
         "title": "Who posted it",
-        "text": "The photo was first posted at 8:05 PM by “Aman B.”, a student in the class.\nAman has no key to Room 204 or to the cupboard."
+        "text": "The photo was first posted at 8:05 PM by “Aman B.”, a student in the class.\nAman has no key to Room 204 or to the cupboard.\nOn Aman's phone the photo arrived as a forwarded image at 8:01 PM. The chat it came from has been deleted."
       },
-      "question": "What does this suggest?",
+      "question": "What is the most reasonable reading of this?",
       "options": [
-        "Aman broke into the steel cupboard himself",
-        "Aman wrote the question paper",
-        "The professor sent it to the whole class",
-        "Someone with a key gave Aman the photo"
+        "Aman went into Room 204 himself and photographed the paper on the desk",
+        "The professor sent the paper to the class group by mistake",
+        "The photo was taken days earlier and only posted on Thursday",
+        "Someone with access took it and sent it to Aman just before 8:01"
       ],
       "answer": 4
     },
@@ -125,16 +125,16 @@
       "clue": {
         "label": "Timeline",
         "title": "Thursday evening",
-        "text": "6:30 PM — red-ink correction made\n6:45 PM — paper locked in the cupboard\n7:10 PM — Prof. Kapoor and Nisha leave Room 204\n8:05 PM — photo posted in the class group"
+        "text": "6:30 PM — red-ink correction made\n6:45 PM — paper locked in the cupboard\n7:10 PM — Prof. Kapoor and Nisha leave Room 204\n8:01 PM — photo reaches Aman's phone\n8:05 PM — photo posted in the class group\n\nProf. Kapoor: “From 6:30 until I locked it away, the paper never left my hands.”"
       },
-      "question": "When was the photo most likely taken?",
+      "question": "Using every time you know, when was the photo taken?",
       "options": [
-        "Between 7:10 PM and 8:05 PM",
-        "Between 5:00 PM and 6:30 PM",
-        "Between 6:45 PM and 6:50 PM",
-        "After 8:05 PM"
+        "Between 6:30 PM and 6:45 PM, before it was locked",
+        "Between 6:45 PM and 7:10 PM",
+        "Between 7:10 PM and 8:01 PM",
+        "Between 8:01 PM and 8:05 PM"
       ],
-      "answer": 1
+      "answer": 3
     }
   ],
   "twist_md": "New evidence has come in: the department visitor register, the clerk's desk, and a remark about the green mug.",
@@ -144,14 +144,14 @@
       "clue": {
         "label": "Visitor register",
         "title": "Room 204, Thursday",
-        "text": "Bhatia — OUT 5:30 PM\nNisha — IN 6:50 PM, OUT 7:10 PM\nBhatia — IN 7:40 PM, OUT 8:10 PM\n\nBhatia: “I came back at 7:40 only for my tiffin box and left.”\n\nNext morning the tiffin box is still on his desk, unopened."
+        "text": "Bhatia — OUT 5:30 PM\nNisha — IN 6:50 PM, OUT 7:10 PM\nBhatia — IN 7:40 PM, OUT 8:10 PM\nThe corridor guard: “Nobody else went in after 7:10.”\n\nBhatia: “I came back at 7:40 only for my tiffin box and left.”\n\nNext morning the tiffin box is still on his desk, unopened."
       },
-      "question": "What is wrong with Bhatia's story?",
+      "question": "Which two facts break Bhatia's story?",
       "options": [
-        "He never came back to the office at all",
-        "He stayed 30 minutes and never took the tiffin",
-        "He left before Nisha and the professor arrived",
-        "Nothing is wrong with his story"
+        "He signed the register, and the corridor guard saw him",
+        "He stayed 30 minutes for a one-minute errand, and the tiffin never left",
+        "He left at 5:30 PM, and Nisha arrived at 6:50 PM",
+        "He came back after the professor had gone, and he left at 8:10 PM"
       ],
       "answer": 2
     },
@@ -162,12 +162,12 @@
         "title": "Inside the clerk's drawer",
         "text": "• The spare cupboard key, on a tag.\n• Under it, a college notice: “Backlog list: Aman Bhatia, Data Structures, 2nd attempt.”\n\nAman is Mr. Bhatia's son."
       },
-      "question": "What was the motive?",
+      "question": "Which earlier clue becomes far more important now?",
       "options": [
-        "To help his son pass the exam",
-        "To sell the paper to students for money",
-        "To get the professor into trouble",
-        "To get Rohan removed from his job"
+        "The post by “Aman B.” at 8:05 PM",
+        "Rohan's library log",
+        "The red-ink correction",
+        "Nisha's lab files"
       ],
       "answer": 1
     },
@@ -176,14 +176,14 @@
       "clue": {
         "label": "The green mug",
         "title": "Whose mug is it?",
-        "text": "Rohan: “Everyone knows the chipped green mug is Bhatia sir's.”\n\nThe photo was posted at 8:05 PM. Bhatia was inside Room 204 from 7:40 to 8:10 PM."
+        "text": "Rohan: “Everyone knows the chipped green mug is Bhatia sir's.”\n\nThe photo reached Aman at 8:01 PM. Bhatia was inside Room 204 from 7:40 to 8:10 PM, and nobody else went in after 7:10."
       },
       "question": "What most likely happened?",
       "options": [
-        "Rohan took the photo and blamed Mr. Bhatia",
-        "Nisha came back with the professor's key",
-        "Aman broke in while his father waited outside",
-        "Bhatia used the spare key and sent his son the photo"
+        "Rohan took the photo earlier in the day and kept it to put the blame on Bhatia",
+        "Aman slipped into Room 204 and took the spare key from the drawer",
+        "Nisha came back alone with the professor's key after 7:10 PM",
+        "Bhatia opened the cupboard with the spare key and sent his son the photo"
       ],
       "answer": 4
     }
@@ -191,6 +191,6 @@
   "answer": {
     "first_suspect": "Rohan Verma (teaching assistant)",
     "culprit": "Gopal Bhatia (department clerk)",
-    "explanation": "Gopal Bhatia, the clerk, came back to Room 204 at 7:40 PM, opened the cupboard with the spare key, photographed the paper and sent it to his son Aman, who has a backlog in the same subject and posted it at 8:05 PM. The red-ink correction proves the photo was taken after 6:30 PM, the cupboard was not forced, and Bhatia's green mug is in the photo. His “I only came for my tiffin” story is false: he stayed 30 minutes and the tiffin was still on his desk next morning. Rohan was in the library from 5:10 to 8:45, and Nisha was with the professor the whole time."
+    "explanation": "Gopal Bhatia, the clerk, came back to Room 204 at 7:40 PM, opened the cupboard with the spare key from his drawer, photographed the paper and sent it to his son Aman, who has a backlog in the same subject. The photo reached Aman at 8:01 PM and he posted it at 8:05 PM. The red-ink correction proves the photo was taken after 6:30 PM, the cupboard was not forced and was locked again, and Bhatia's green mug is in the photo. His “I only came for my tiffin” story is false: he stayed 30 minutes, the tiffin was still on his desk next morning, and nobody else entered after 7:10. Rohan was in the library from 5:10 to 8:45, and Nisha was with the professor the whole time."
   }
 }
